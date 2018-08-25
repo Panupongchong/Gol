@@ -1,4 +1,6 @@
 ﻿using System;
+using UnityEngine;
+using System.Collections.Generic;
 
 public class Utility
 {
@@ -27,5 +29,34 @@ public class Utility
 	public enum PlayerPrefKey{
 		BEST, //best score
 	}
+
+    public class JsonHelper
+    {
+        public static T[] getJsonArray<T>(string json)
+        {
+            string newJson = "{ \"array\": " + json + "}";
+            WrapperArray<T> wrapper = JsonUtility.FromJson<WrapperArray<T>>(newJson);
+            return wrapper.array;
+        }
+
+        public static Dictionary<string, T> getJsonDictionary<T>(string json)
+        {
+            string newJson = "{ \"array\": " + json + "}";
+            WrapperDic<T> wrapper = JsonUtility.FromJson<WrapperDic<T>>(newJson);
+            return wrapper.dic;
+        }
+
+        [Serializable]
+        private class WrapperArray<T>
+        {
+            public T[] array;
+        }
+
+        [Serializable]
+        private class WrapperDic<T>
+        {
+            public Dictionary<string,T> dic;
+        }
+    }
 }
 

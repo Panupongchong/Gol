@@ -12,7 +12,10 @@ public class EndlessGameplayController : BaseGameplayController {
 	private int m_operaton = 0; //0 >, 1 <
 	private bool m_playing;
 	private int m_countCombo = 0;
-
+    private int accuracyHit = 0;
+    private int accuracyTotal = 0;
+    private float matchTime = 0;
+    private string m_matchId = "";
 	void Start(){
 		m_factory = new Mini1QuizFactory ();
 		m_playing = false;
@@ -27,6 +30,7 @@ public class EndlessGameplayController : BaseGameplayController {
 
 	void Update(){
 		if (m_playing) {
+            matchTime += Time.deltaTime;
 			timeLeft -= Time.deltaTime;
 			m_view.SetTimeFill (timeLeft / m_timeLimit);
 			if (timeLeft < 0) {
@@ -35,9 +39,11 @@ public class EndlessGameplayController : BaseGameplayController {
 		}
 	}
 
-	public void startGame(){
+    public void startGame(int startLife = 1, string matchId = ""){
 		Debug.Log ("Game start");
+        m_matchId = matchId;
 		lv = 1;
+        m_startLife = startLife;
 		quizList.Clear ();
 		m_view.gameObject.SetActive (true);
 		m_view.reset ();
@@ -61,16 +67,38 @@ public class EndlessGameplayController : BaseGameplayController {
 		int best = GameMasterController.Instance.getBestScore ();
 
 		yield return new WaitForSeconds (1f);
-
-		if (score > best) {
-			best = score;
-			GameMasterController.Instance.SetBestScore (best);
-			SoundController.Instance.PlaySound ("Win");
-		} else {
-			SoundController.Instance.PlaySound ("Lose");
-		}
-		m_view.gameObject.SetActive (false);
-		UiMasterController.Instance.ShowResult (score, combo, bonus, best);
+        if (m_matchId != "")
+        {
+            RoundData data = new RoundData()
+            {
+                Score = score,
+                Combo = combo,
+                Bonus = bonus,
+                AccuracyHit = accuracyHit,
+                AccuracyTotal = accuracyTotal,
+                AverageSpeed = accuracyTotal / matchTime,
+            };
+            FirebaseController.Instance.SaveMatch(m_matchId, data, () =>
+            {
+                m_view.gameObject.SetActive(false);
+                UiMasterController.Instance.ShowResult(score, combo, bonus, best, m_matchId);
+            });
+        }
+        else
+        {
+            if (score > best)
+            {
+                best = score;
+                GameMasterController.Instance.SetBestScore(best);
+                SoundController.Instance.PlaySound("Win");
+            }
+            else
+            {
+                SoundController.Instance.PlaySound("Lose");
+            }
+            m_view.gameObject.SetActive(false);
+            UiMasterController.Instance.ShowResult(score, combo, bonus, best);
+        }
 	}
 		
 	void generatePlay(){
@@ -134,6 +162,7 @@ public class EndlessGameplayController : BaseGameplayController {
 		if (life <= 0) {
 			endGame ();
 		}
+        accuracyTotal += 1;
 	}
 
 	private void OnCorrectAnswer(int _side){
@@ -158,5 +187,7 @@ public class EndlessGameplayController : BaseGameplayController {
 				lv++;
 			}
 		}
+        accuracyHit += 1;
+        accuracyTotal += 1;
 	}
 }
