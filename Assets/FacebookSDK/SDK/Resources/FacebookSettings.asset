@@ -15,9 +15,9 @@ MonoBehaviour:
   clientTokens:
   - 
   appIds:
-  - 152073025406263
+  - 329846747543944
   appLabels:
-  - GOL
+  - Greater or less
   cookie: 1
   logging: 1
   status: 1

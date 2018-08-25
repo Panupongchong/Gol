@@ -41,8 +41,8 @@ public class GameMasterController : MonoBehaviour {
 		return best;
 	}
 
-	public void startGame (){
-		GetComponent<EndlessGameplayController> ().startGame ();
+	public void startGame (int startLife = 1, string matchId = ""){
+		GetComponent<EndlessGameplayController> ().startGame (startLife, matchId);
 	}
 	/*
 	void Update () {

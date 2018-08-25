@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "251867177771",
+    "firebase_url": "https://greater-or-less-e0877.firebaseio.com",
+    "project_id": "greater-or-less-e0877",
+    "storage_bucket": "greater-or-less-e0877.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:251867177771:android:3954d287853a619b",
+        "android_client_info": {
+          "package_name": "com.theproject.gol"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "251867177771-fg19te81sq81lmn995e6d8dan0s7d01e.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "251867177771-fg19te81sq81lmn995e6d8dan0s7d01e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAix7_yzDilbGxmoZyWx7b-GIYggj0H908"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
