@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: dfe1264154774d709896e750e01d4d14
+labels:
+- gvh
+- gvh_version-1.2.187
+- gvh_version-13.7.0
+- gvhp_exportpath-ExternalDependencyManager/Editor/1.2.187/Google.PackageManagerResolver.pdb
+timeCreated: 1538009133
+licenseType: Pro
+DefaultImporter:
+  userData:
+  assetBundleName:
+  assetBundleVariant:

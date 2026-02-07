@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Firebase;
 using Firebase.Database;
-using Firebase.Unity.Editor;
+// using Firebase.Unity.Editor;
 using Firebase.Auth;
 using System;
 using System.Linq;
@@ -115,10 +115,10 @@ public class FirebaseController : MonoBehaviour
 
     private void initialiseFirebase()
     {
-        FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://greater-or-less-e0877.firebaseio.com/");
-        FirebaseApp.DefaultInstance.SetEditorP12FileName("Excercise-11ba04d5d068.p12");
-        FirebaseApp.DefaultInstance.SetEditorServiceAccountEmail("greater-or-less-e0877@appspot.gserviceaccount.com");
-        FirebaseApp.DefaultInstance.SetEditorP12Password("notasecret");
+        // FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://greater-or-less-e0877.firebaseio.com/");
+        // FirebaseApp.DefaultInstance.SetEditorP12FileName("Excercise-11ba04d5d068.p12");
+        // FirebaseApp.DefaultInstance.SetEditorServiceAccountEmail("greater-or-less-e0877@appspot.gserviceaccount.com");
+        // FirebaseApp.DefaultInstance.SetEditorP12Password("notasecret");
         auth = FirebaseAuth.DefaultInstance;
         auth.StateChanged += AuthStateChanged;
         AuthStateChanged(this, null);
