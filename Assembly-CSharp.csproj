@@ -49,100 +49,100 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.2f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\GAF\Scripts\Core\Interfaces\GAFMovieClipInternal.cs" />
     <Compile Include="Assets\Scripts\Class\Line.cs" />
-    <Compile Include="Assets\Scripts\UI\Panel\PvpLoginViewController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\GAFBakedObjectsManager.cs" />
     <Compile Include="Assets\Scripts\Controller\EndlessGameplayController.cs" />
     <Compile Include="Assets\Scripts\Class\CsvHelper.cs" />
-    <Compile Include="Assets\Scripts\Controller\NetworkController.cs" />
-    <Compile Include="Assets\Scripts\Class\Quiz.cs" />
-    <Compile Include="Assets\GAF\Scripts\Asset\GAFAnimationAsset.cs" />
     <Compile Include="Assets\Scripts\Class\Round.cs" />
     <Compile Include="Assets\Scripts\UI\Panel\MainMenuViewController.cs" />
     <Compile Include="Assets\Scripts\UI\BlockObjectController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\Interfaces\GAFBakedObjectsManagerInternal.cs" />
-    <Compile Include="Assets\Scripts\UI\Panel\Child\MatchSelectController.cs" />
     <Compile Include="Assets\Scripts\UI\QuizPanelController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Core\GAFBakedMovieClip.cs" />
     <Compile Include="Assets\TestPvpController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Asset\GAFTexturesResource.cs" />
-    <Compile Include="Assets\LoginPanelController.cs" />
     <Compile Include="Assets\Scripts\UI\Panel\PvpMenuViewController.cs" />
-    <Compile Include="Assets\Scripts\Model\BlockObjectPoolController.cs" />
     <Compile Include="Assets\Scripts\UI\GameplayViewController.cs" />
     <Compile Include="Assets\Scripts\UI\Panel\PvpResult\RoundDetailViewController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Core\GAFMovieClip.cs" />
-    <Compile Include="Assets\Scripts\UI\Panel\PvpResult\PvpResultViewController.cs" />
     <Compile Include="Assets\Scripts\Factory\Mini1QuizFactory.cs" />
-    <Compile Include="Assets\Scripts\UI\Panel\ResultViewController.cs" />
-    <Compile Include="Assets\Scripts\Controller\BaseGameplayController.cs" />
-    <Compile Include="Assets\Scripts\Class\Block.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\GAFBakedObjectController.cs" />
     <Compile Include="Assets\GPGSIds.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\GAFObjectsManager.cs" />
     <Compile Include="Assets\Scripts\UI\SwipeController.cs" />
     <Compile Include="Assets\FirebaseController.cs" />
-    <Compile Include="Assets\Scripts\Factory\QuizFactory.cs" />
-    <Compile Include="Assets\SoundController.cs" />
     <Compile Include="Assets\Scripts\UI\Panel\BaseViewController.cs" />
     <Compile Include="Assets\Scripts\Model\GameMasterController.cs" />
     <Compile Include="Assets\ResultPanelController.cs" />
     <Compile Include="Assets\Scripts\UI\UiMasterController.cs" />
     <Compile Include="Assets\Scripts\Model\QuizPanelPoolController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\GAFBakedObject.cs" />
     <Compile Include="Assets\Scripts\UI\Panel\PvpResult\CompletedMatchViewController.cs" />
-    <Compile Include="Assets\Scripts\UI\Panel\PvpResult\IncompletedMatchViewController.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\Interfaces\GAFObjectsManagerInternal.cs" />
     <Compile Include="Assets\Scripts\Model\GameInformationMaster.cs" />
-    <Compile Include="Assets\Scripts\Class\Utility.cs" />
     <Compile Include="Assets\Scripts\Class\Mini1Quiz.cs" />
-    <Compile Include="Assets\GAF\Scripts\Objects\GAFObject.cs" />
+    <Compile Include="Assets\Scripts\UI\Panel\PvpLoginViewController.cs" />
+    <Compile Include="Assets\Scripts\Controller\NetworkController.cs" />
+    <Compile Include="Assets\Scripts\Class\Quiz.cs" />
+    <Compile Include="Assets\Scripts\UI\Panel\Child\MatchSelectController.cs" />
+    <Compile Include="Assets\LoginPanelController.cs" />
+    <Compile Include="Assets\Scripts\Model\BlockObjectPoolController.cs" />
+    <Compile Include="Assets\Scripts\UI\Panel\PvpResult\PvpResultViewController.cs" />
+    <Compile Include="Assets\Scripts\UI\Panel\ResultViewController.cs" />
+    <Compile Include="Assets\Scripts\Controller\BaseGameplayController.cs" />
+    <Compile Include="Assets\Scripts\Class\Block.cs" />
+    <Compile Include="Assets\Scripts\Factory\QuizFactory.cs" />
+    <Compile Include="Assets\SoundController.cs" />
+    <Compile Include="Assets\Scripts\UI\Panel\PvpResult\IncompletedMatchViewController.cs" />
+    <Compile Include="Assets\Scripts\Class\Utility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\GAF\Resources\Shaders\GAFShaderBase.cginc" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFMaskReset.shader" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFObjectsGroup.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
+    <None Include="Assets\Spine\version.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppInstallations.dll" />
     <None Include="Assets\FacebookSDK\Plugins\Canvas\Facebook.Unity.Canvas.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
     <None Include="Assets\FacebookSDK\Plugins\Android\Facebook.Unity.Android.dll" />
     <None Include="Assets\FacebookSDK\link.xml" />
     <None Include="Assets\FacebookSDK\Plugins\iOS\Facebook.Unity.IOS.dll" />
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppDatabase.dll" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFBlur.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap.shader" />
     <None Include="Assets\Firebase\Plugins\Firebase.App.dll" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFMask.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppAuth.dll" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFFilteredObject.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\Firebase\Plugins\Firebase.TaskExtension.dll" />
     <None Include="Assets\GafAsset\GAF_Label_format.txt" />
-    <None Include="Assets\GAF\Plugins\GAF.dll" />
     <None Include="Assets\Firebase\m2repository\com\google\firebase\firebase-app-unity\maven-metadata.xml" />
+    <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\Firebase\Plugins\iOS\Firebase.Installations.dll" />
     <None Include="Assets\Firebase\Plugins\Firebase.Auth.dll" />
-    <None Include="Assets\GAF\Plugins\GAF.XML" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
+    <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\FacebookSDK\Plugins\Gameroom\FacebookNamedPipeClient.dll" />
     <None Include="Assets\Firebase\Plugins\Firebase.Installations.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
     <None Include="Assets\Firebase\m2repository\com\google\firebase\firebase-installations-unity\maven-metadata.xml" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
     <None Include="Assets\Firebase\Plugins\Firebase.Database.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
     <None Include="Assets\Firebase\m2repository\com\google\firebase\firebase-auth-unity\maven-metadata.xml" />
     <None Include="Assets\FacebookSDK\Plugins\iOS\Facebook.Unity.Android.dll" />
     <None Include="Assets\FacebookSDK\Plugins\Settings\Facebook.Unity.Settings.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
     <None Include="Assets\Firebase\Plugins\iOS\Firebase.Auth.dll" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFFilters.cginc" />
     <None Include="Assets\Firebase\Plugins\x86_64\FirebaseCppApp-13_7_0.dll" />
+    <None Include="Assets\SpineAsset\VisualTypes.atlas.txt" />
+    <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\Firebase\Plugins\iOS\Firebase.Database.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\FacebookSDK\Plugins\Facebook.Unity.dll" />
     <None Include="Assets\Firebase\Plugins\Firebase.Platform.dll" />
-    <None Include="Assets\GAF\Docs\Readme.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\Firebase\m2repository\com\google\firebase\firebase-database-unity\maven-metadata.xml" />
-    <None Include="Assets\GAF\Plugins\Ionic.Zip.Reduced.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\Firebase\Plugins\Google.MiniJson.dll" />
-    <None Include="Assets\GAF\Resources\Shaders\GAFGlow.shader" />
+    <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\FacebookSDK\Plugins\Android\Facebook.Unity.IOS.dll" />
     <None Include="Assets\FacebookSDK\Plugins\Gameroom\Facebook.Unity.Gameroom.dll" />
-    <None Include="Assets\GAF\Docs\What&apos;s new.txt" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
     <None Include="Assets\Firebase\Plugins\iOS\Firebase.App.dll" />
+    <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -689,20 +689,32 @@
       <HintPath>Library\PackageCache\com.unity.ext.nunit@d8c07649098d\net40\unity-custom\nunit.framework.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="GAF">
-      <HintPath>Assets\GAF\Plugins\GAF.dll</HintPath>
+    <Reference Include="Firebase.App">
+      <HintPath>Assets\Firebase\Plugins\Firebase.App.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Firebase.TaskExtension">
+      <HintPath>Assets\Firebase\Plugins\Firebase.TaskExtension.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Firebase.Installations">
+      <HintPath>Assets\Firebase\Plugins\Firebase.Installations.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Firebase.Auth">
+      <HintPath>Assets\Firebase\Plugins\Firebase.Auth.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.IO.Hashing">
       <HintPath>Library\PackageCache\com.unity.collections@aea9d3bd5e19\Unity.Collections.Tests\System.IO.Hashing\System.IO.Hashing.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Firebase.Database">
-      <HintPath>Assets\Firebase\Plugins\Firebase.Database.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="FacebookNamedPipeClient">
       <HintPath>Assets\FacebookSDK\Plugins\Gameroom\FacebookNamedPipeClient.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Firebase.Database">
+      <HintPath>Assets\Firebase\Plugins\Firebase.Database.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Facebook.Unity.Settings">
@@ -717,40 +729,20 @@
       <HintPath>Assets\FacebookSDK\Plugins\Facebook.Unity.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Firebase.Platform">
+      <HintPath>Assets\Firebase\Plugins\Firebase.Platform.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
       <HintPath>Library\PackageCache\com.unity.collections@aea9d3bd5e19\Unity.Collections.Tests\System.Runtime.CompilerServices.Unsafe\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Ionic.Zip.Reduced">
-      <HintPath>Assets\GAF\Plugins\Ionic.Zip.Reduced.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Facebook.Unity.Gameroom">
-      <HintPath>Assets\FacebookSDK\Plugins\Gameroom\Facebook.Unity.Gameroom.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Firebase.App">
-      <HintPath>Assets\Firebase\Plugins\Firebase.App.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Firebase.TaskExtension">
-      <HintPath>Assets\Firebase\Plugins\Firebase.TaskExtension.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Google.MiniJson">
       <HintPath>Assets\Firebase\Plugins\Google.MiniJson.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Firebase.Platform">
-      <HintPath>Assets\Firebase\Plugins\Firebase.Platform.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Firebase.Auth">
-      <HintPath>Assets\Firebase\Plugins\Firebase.Auth.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Firebase.Installations">
-      <HintPath>Assets\Firebase\Plugins\Firebase.Installations.dll</HintPath>
+    <Reference Include="Facebook.Unity.Gameroom">
+      <HintPath>Assets\FacebookSDK\Plugins\Gameroom\Facebook.Unity.Gameroom.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
@@ -1313,10 +1305,6 @@
       <HintPath>Library\ScriptAssemblies\Unity.2D.Tilemap.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.AI.Navigation">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.2D.Common.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Runtime.dll</HintPath>
       <Private>False</Private>
@@ -1353,16 +1341,8 @@
       <HintPath>Library\ScriptAssemblies\Unity.2D.Common.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.AI.Navigation.Updater">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Updater.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.Burst">
       <HintPath>Library\ScriptAssemblies\Unity.Burst.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.AI.Navigation.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.2D.Tooling.Editor">
@@ -1417,10 +1397,6 @@
       <HintPath>Library\ScriptAssemblies\Unity.2D.SpriteShape.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
-      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.2D.Aseprite.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Aseprite.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1431,6 +1407,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="spine-unity-examples-editor.csproj" />
+    <ProjectReference Include="spine-unity-examples.csproj" />
+    <ProjectReference Include="spine-unity-editor.csproj" />
+    <ProjectReference Include="spine-csharp.csproj" />
+    <ProjectReference Include="spine-unity.csproj" />
   </ItemGroup>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>

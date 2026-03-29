@@ -68,8 +68,8 @@ public class GameplayViewController : BaseViewController {
 		foreach (Line _line in _lines) {
 			_count++;
 
-			BlockObjectController _newLeft = null;
-			BlockObjectController _newRight = null;
+			BaseBlockObject _newLeft = null;
+			BaseBlockObject _newRight = null;
 
 			_newLeft = _line.m_leftBlock.Count == 1 ? BlockObjectPoolController.Instance.getBlockObject () 
 				: BlockObjectPoolController.Instance.getDuoBlockObject ();

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using Unity.Android.Gradle;
 
 public class QuizPanelController : MonoBehaviour {
 
@@ -12,8 +13,8 @@ public class QuizPanelController : MonoBehaviour {
 	private float extraSize = 20;
 	public float speed = 100f;
 	private int blockCount = 0;
-	private  List<BlockObjectController> m_leftBlock = new List<BlockObjectController> ();
-	private  List<BlockObjectController> m_rightBlock = new List<BlockObjectController> ();
+	private  List<BaseBlockObject> m_leftBlock = new List<BaseBlockObject> ();
+	private  List<BaseBlockObject> m_rightBlock = new List<BaseBlockObject> ();
 	private Coroutine moveDownTween = null;
 
 	private bool last = false;
@@ -24,10 +25,10 @@ public class QuizPanelController : MonoBehaviour {
 	}
 
 	public void reset (){
-		foreach (BlockObjectController left in m_leftBlock) {
+		foreach (BaseBlockObject left in m_leftBlock) {
 			BlockObjectPoolController.Instance.returnBlock (left);
 		}
-		foreach (BlockObjectController right in m_rightBlock) {
+		foreach (BaseBlockObject right in m_rightBlock) {
 			BlockObjectPoolController.Instance.returnBlock (right);
 		}
 
@@ -41,7 +42,7 @@ public class QuizPanelController : MonoBehaviour {
 		backgroundImage.color = Color.gray;
 	}
 
-	public void addLine(BlockObjectController _left, BlockObjectController _right){
+	public void addLine(BaseBlockObject _left, BaseBlockObject _right){
 		m_leftBlock.Add (_left);
 		m_rightBlock.Add (_right);
 		blockCount++;
@@ -95,7 +96,7 @@ public class QuizPanelController : MonoBehaviour {
 		}
 	}
 
-	private IEnumerator AdjustTransInTheEndOfFrame(BlockObjectController obj, Vector3 position) 
+	private IEnumerator AdjustTransInTheEndOfFrame(BaseBlockObject obj, Vector3 position) 
 	{
 		yield return new WaitForEndOfFrame();
 		obj.transform.position = position;
