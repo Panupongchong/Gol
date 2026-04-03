@@ -46,7 +46,7 @@ public class ResultViewController : BaseViewController {
         SoundController.Instance.PlaySound("Press");
         if(_matchId == "")
         {
-            GameMasterController.Instance.startGame();
+            GameMasterController.Instance.StartGame();
         } else {
             UiMasterController.Instance.PvpMenuPanel.gameObject.SetActive(true);
         }

@@ -2,7 +2,8 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class SwipeController : MonoBehaviour {
+public class SwipeController : MonoBehaviour
+{
 
 	/// <summary>
 	/// Occurs when on left swipe.
@@ -32,33 +33,45 @@ public class SwipeController : MonoBehaviour {
 	public delegate void TapAction();
 	public static event TapAction OnLeftTap;
 	public static event TapAction OnRightTap;
+	public static event TapAction OnMidTap;
+
+	private float MidRange = 100f;
 
 	private bool isDraging = false;
 	private Vector2 startTouch, swipeDelta;
 	private float half;
 
-	void Start(){
+	void Start()
+	{
 		half = Screen.width / 2f;
 	}
 
 	private void Update()
 	{
 
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		#region Standalone Inputs
-		if(Input.GetMouseButtonDown(0))
+		if (Input.GetMouseButtonDown(0))
 		{
 			isDraging = true;
 			startTouch = Input.mousePosition;
 		}
-		else if(Input.GetMouseButtonUp(0))
+		else if (Input.GetMouseButtonUp(0))
 		{
-			swipeDelta = (Vector2) Input.mousePosition - startTouch;
-			if(swipeDelta.magnitude < 100f){
-				if(startTouch.x < half){
-					OnLeftTap();
-				} else {
-					OnRightTap();
+			swipeDelta = (Vector2)Input.mousePosition - startTouch;
+			if (swipeDelta.magnitude < 100f)
+			{
+				if (Mathf.Abs(half - startTouch.x) < MidRange)
+				{
+					OnMidTap?.Invoke();
+				}
+				else if (startTouch.x < half)
+				{
+					OnLeftTap?.Invoke();
+				}
+				else
+				{
+					OnRightTap?.Invoke();
 				}
 			}
 			isDraging = false;
@@ -67,7 +80,7 @@ public class SwipeController : MonoBehaviour {
 
 		#endregion
 
-		#else
+#else
 
 		#region Mobile Input
 
@@ -82,10 +95,17 @@ public class SwipeController : MonoBehaviour {
 			{
 				swipeDelta = Input.touches[0].position - startTouch;
 				if(swipeDelta.magnitude < 20f){
-					if(startTouch.x < half){
-						OnLeftTap();
-					} else {
-						OnRightTap();
+					if(Mathf.Abs(half - startTouch.x) < MidRange) 
+					{
+						OnMidTap?.Invoke();
+					}
+					else if(startTouch.x < half)
+					{
+						OnLeftTap?.Invoke();
+					} 
+					else 
+					{
+						OnRightTap?.Invoke();
 					}
 				}
 				isDraging = false;
@@ -94,40 +114,40 @@ public class SwipeController : MonoBehaviour {
 		}
 
 		#endregion
-		#endif
+#endif
 		// Calculate the distance
 
 		swipeDelta = Vector2.zero;
 
-		if(isDraging)
+		if (isDraging)
 		{
-			if(Input.touches.Length > 0)
+			if (Input.touches.Length > 0)
 			{
 				swipeDelta = Input.touches[0].position - startTouch;
 			}
-			else if(Input.GetMouseButton(0))
+			else if (Input.GetMouseButton(0))
 			{
-				swipeDelta = (Vector2) Input.mousePosition - startTouch;
+				swipeDelta = (Vector2)Input.mousePosition - startTouch;
 			}
 		}
 
 		// Did we cross the deadzone ?
-		if(swipeDelta.magnitude > 100f)
+		if (swipeDelta.magnitude > 100f)
 		{
 			// Which direction ?
 			float x = swipeDelta.x;
 			float y = swipeDelta.y;
 
-			if(Mathf.Abs(x) > Mathf.Abs(y))
+			if (Mathf.Abs(x) > Mathf.Abs(y))
 			{
 				// Left or right
-				if(x < 0)
+				if (x < 0)
 				{
-					OnLeftSwipe ();
+					OnLeftSwipe();
 				}
 				else
 				{
-					OnRightSwipe ();
+					OnRightSwipe();
 				}
 			}
 			else

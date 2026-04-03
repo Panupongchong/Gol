@@ -71,7 +71,7 @@ public class IncompletedMatchViewController : BaseViewController
 
             _playButton.onClick.RemoveAllListeners();
             _playButton.onClick.AddListener(()=>{
-                GameMasterController.Instance.startGame(3, match.Id);
+                GameMasterController.Instance.StartGame(3, match.Id);
                 _menu.gameObject.SetActive(false);
             });
         }

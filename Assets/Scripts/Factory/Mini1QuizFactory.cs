@@ -32,12 +32,12 @@ public class Mini1QuizFactory : QuizFactory {
 					no -= no2;
 					mir = randomMirrorType ();
 					Block _block2 = new Block (no2, pri [j], mir);
-					_line.addBlock (_block2, j);
+					_line.AddBlock (_block2, j);
 				}
 
 				mir = randomMirrorType ();
 				Block _block = new Block (no, pri [j], mir);
-				_line.addBlock (_block, j);
+				_line.AddBlock (_block, j);
 			}
 			((Mini1Quiz)_quiz).addLine (_line);
 		}

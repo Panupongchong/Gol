@@ -2,190 +2,260 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
-using Unity.Android.Gradle;
+using UnityEngine.Pool;
 
-public class QuizPanelController : MonoBehaviour {
+public struct SubQuiz
+{
+	public readonly List<BaseBlockObject> LeftBlock;
+	public readonly List<BaseBlockObject> RightBlock;
+
+	public SubQuiz(List<BaseBlockObject> leftBlocks, List<BaseBlockObject> rightBlocks)
+	{
+		LeftBlock = leftBlocks;
+		RightBlock = rightBlocks;
+	}
+
+	public readonly void Reset()
+	{
+		LeftBlock.ForEach(BlockObjectPoolController.Instance.returnBlock);
+		RightBlock.ForEach(BlockObjectPoolController.Instance.returnBlock);
+		LeftBlock.Clear();
+		RightBlock.Clear();
+	}
+}
+
+[RequireComponent(typeof(RectTransform))]
+[RequireComponent(typeof(Image))]
+public class QuizPanelController : MonoBehaviour
+{
+	public BaseBlockObject BlockPrefab;
+
+	public Transform LeftContainer;
+	public Transform RightContainer;
 
 	//Parameter
-	private RectTransform background;
-	private Image backgroundImage;
-	private float blockSize =300;
-	private float extraSize = 20;
 	public float speed = 100f;
-	private int blockCount = 0;
-	private  List<BaseBlockObject> m_leftBlock = new List<BaseBlockObject> ();
-	private  List<BaseBlockObject> m_rightBlock = new List<BaseBlockObject> ();
-	private Coroutine moveDownTween = null;
 
-	private bool last = false;
+	private RectTransform _background;
+	private Image _backgroundImage;
+	private float _blockSize = 300;
+	private float _extraSize = 20;
+	private List<SubQuiz> _subQuizzes = new();
+	private Coroutine _moveDownTween = null;
 
-	void Awake(){
-		background = GetComponent<RectTransform> ();
-		backgroundImage = GetComponent<Image> ();
+	private ObjectPool<BaseBlockObject> _blockObjectPool;
+	private bool _last = false;
+	private Vector3 _to;
+
+	void Awake()
+	{
+		_background = GetComponent<RectTransform>();
+		_backgroundImage = GetComponent<Image>();
+
+		_blockObjectPool = new(() => Instantiate(BlockPrefab, transform));
 	}
 
-	public void reset (){
-		foreach (BaseBlockObject left in m_leftBlock) {
-			BlockObjectPoolController.Instance.returnBlock (left);
+	public void Reset()
+	{
+		_subQuizzes.ForEach(x => x.Reset());
+		_subQuizzes.Clear();
+	}
+
+	void OnEnable()
+	{
+		_last = false;
+		_backgroundImage.color = Color.gray;
+	}
+
+	public void AddLine(Line lineData)
+	{
+		List<BaseBlockObject> leftBlock = new();
+		List<BaseBlockObject> rightBlock = new();
+		AddBlock(lineData.LeftBlock, LeftContainer, ref leftBlock);
+		AddBlock(lineData.RightBlock, RightContainer, ref rightBlock);
+		_subQuizzes.Add(new(leftBlock, rightBlock));
+		UpdateSize();
+	}
+
+	private void AddBlock(List<Block> blocks, Transform parent, ref List<BaseBlockObject> trackingList)
+	{
+		foreach (Block block in blocks)
+		{
+			BaseBlockObject newBlock = _blockObjectPool.Get(); //TODO: check if duo, get 2 instead
+			newBlock.transform.SetParent(parent);
+			newBlock.Initialise(block.GetNumber(), block.GetBlockType(), block.GetInverse());
+			newBlock.gameObject.SetActive(true);
+			trackingList.Add(newBlock);
 		}
-		foreach (BaseBlockObject right in m_rightBlock) {
-			BlockObjectPoolController.Instance.returnBlock (right);
+	}
+
+	private void UpdateSize()
+	{
+		float bgHeight = _subQuizzes.Count * _blockSize + (_subQuizzes.Count - 1) * _extraSize;
+		if (gameObject.activeSelf && _background.sizeDelta.y != bgHeight)
+		{
+			StartCoroutine(ScaleHeightTo(bgHeight));
 		}
-
-		m_leftBlock.Clear ();
-		m_rightBlock.Clear ();
-		blockCount = 0;
-	}
-
-	void OnEnable(){
-		last = false;
-		backgroundImage.color = Color.gray;
-	}
-
-	public void addLine(BaseBlockObject _left, BaseBlockObject _right){
-		m_leftBlock.Add (_left);
-		m_rightBlock.Add (_right);
-		blockCount++;
-		updateSize ();
-	}
-
-	private void updateSize(){
-		float bgHeight = m_leftBlock.Count * blockSize + (m_leftBlock.Count - 1) * extraSize;
-		if (gameObject.activeSelf && background.sizeDelta.y != bgHeight) {
-			StartCoroutine (scaleHeightTo (bgHeight));
-		} else {
-			Vector2 size = new Vector2(background.sizeDelta.x, bgHeight);
-			background.sizeDelta = size;
+		else
+		{
+			Vector2 size = new(_background.sizeDelta.x, bgHeight);
+			_background.sizeDelta = size;
 		}
 	}
 
-	public bool playCorrect (int _side){
-		switch (_side) {
-		case 0:
-			BlockObjectPoolController.Instance.returnBlock (m_rightBlock [0]);
-			m_leftBlock [0].gameObject.SetActive (false);
-			m_leftBlock [0].gameObject.transform.SetParent (BlockObjectPoolController.Instance.transform.parent);
-			StartCoroutine (AdjustTransInTheEndOfFrame (m_leftBlock [0], m_leftBlock [0].transform.position));
-			break;
-		case 1:
-			BlockObjectPoolController.Instance.returnBlock (m_leftBlock [0]);
-			m_rightBlock[0].gameObject.SetActive(false);
-			m_rightBlock [0].gameObject.transform.SetParent (BlockObjectPoolController.Instance.transform.parent);
-			StartCoroutine(AdjustTransInTheEndOfFrame(m_rightBlock[0], m_rightBlock[0].transform.position));
-			break;
-		case 2:
-			m_leftBlock[0].gameObject.SetActive(false);
-			m_leftBlock[0].gameObject.transform.SetParent(BlockObjectPoolController.Instance.transform.parent);
-			StartCoroutine(AdjustTransInTheEndOfFrame(m_leftBlock[0], m_leftBlock[0].transform.position));
-
-			m_rightBlock[0].gameObject.SetActive(false);
-			m_rightBlock[0].gameObject.transform.SetParent(BlockObjectPoolController.Instance.transform.parent);
-			StartCoroutine(AdjustTransInTheEndOfFrame(m_rightBlock[0], m_rightBlock[0].transform.position));
-
-			break;
+	public bool PlayCorrect(int side)
+	{
+		switch (side)
+		{
+			case 0:
+				_subQuizzes[0].LeftBlock.ForEach(x =>
+				{
+					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
+				});
+				_subQuizzes[0].RightBlock.ForEach(x =>
+				{
+					BlockObjectPoolController.Instance.returnBlock(x);
+				});
+				break;
+			case 1:
+				_subQuizzes[0].LeftBlock.ForEach(x =>
+				{
+					BlockObjectPoolController.Instance.returnBlock(x);
+				});
+				_subQuizzes[0].RightBlock.ForEach(x =>
+				{
+					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
+				});
+				break;
+			case 2:
+				_subQuizzes[0].LeftBlock.ForEach(x =>
+				{
+					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
+				});
+				_subQuizzes[0].RightBlock.ForEach(x =>
+				{
+					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
+				});
+				break;
 		}
-		blockCount--;
-		m_leftBlock.RemoveAt (0);
-		m_rightBlock.RemoveAt (0);
-		updateSize ();
-		if (blockCount == 0) {
-			StartCoroutine (disableSelf(0.1f));	
+		_subQuizzes.RemoveAt(0);
+		UpdateSize();
+		if (_subQuizzes.Count == 0)
+		{
+			StartCoroutine(DisableSelf(0.1f));
 			return true;
-		} else {
+		}
+		else
+		{
 			return false;
 		}
 	}
 
-	private IEnumerator AdjustTransInTheEndOfFrame(BaseBlockObject obj, Vector3 position) 
+	private IEnumerator AdjustTransInTheEndOfFrame(BaseBlockObject obj, Vector3 position)
 	{
 		yield return new WaitForEndOfFrame();
 		obj.transform.position = position;
 		obj.gameObject.SetActive(true);
-		obj.animateCorrect ();
+		obj.AnimateCorrect();
 	}
 
-	private IEnumerator disableSelf(float _time){
-		yield return new WaitForSeconds (_time);
-		gameObject.SetActive (false);
+	private IEnumerator DisableSelf(float _time)
+	{
+		yield return new WaitForSeconds(_time);
+		gameObject.SetActive(false);
 	}
 
-	public void playIncorrect (int _side){
-		switch (_side) {
-		case 0:
-			m_leftBlock [0].animateIncorrect ();
-			break;
-		case 1:
-			m_rightBlock [0].animateIncorrect ();
-			break;
-		case 2:
-			m_leftBlock [0].animateIncorrect ();
-			m_rightBlock [0].animateIncorrect ();
-			break;
+	public void PlayIncorrect(int _side)
+	{
+		switch (_side)
+		{
+			case 0:
+				_subQuizzes[0].LeftBlock.ForEach(x => x.AnimateIncorrect());
+				break;
+			case 1:
+				_subQuizzes[0].RightBlock.ForEach(x => x.AnimateIncorrect());
+				break;
+			case 2:
+				_subQuizzes[0].LeftBlock.ForEach(x => x.AnimateIncorrect());
+				_subQuizzes[0].RightBlock.ForEach(x => x.AnimateIncorrect());
+				break;
 		}
 	}
 
-	public void animateActive(){
-		m_leftBlock[0].animateActive ();
-		m_rightBlock[0].animateActive ();
+	public void AnimateActive()
+	{
+		_subQuizzes[0].LeftBlock.ForEach(x => x.AnimateActive());
+		_subQuizzes[0].RightBlock.ForEach(x => x.AnimateActive());
 
-		if (gameObject.activeSelf) {
-			StartCoroutine (changeColorTo (Color.red));
-		} else {
-			backgroundImage.color = Color.red;
+		if (gameObject.activeSelf)
+		{
+			StartCoroutine(ChangeColorTo(Color.red));
 		}
-		last = true;
-	}
-
-	Vector3 _to;
-	public void moveDown(float _y){
-		if (moveDownTween != null) {
-			StopCoroutine (moveDownTween);
+		else
+		{
+			_backgroundImage.color = Color.red;
 		}
-		moveDownTween = StartCoroutine (movePlayLineTo (_to.y - _y / (last ? 2f : 1f)));
+		_last = true;
 	}
 
-	public void moveTo(float _y){
-		StartCoroutine (movePlayLineTo (_y));
+	public void MoveDown(float _y)
+	{
+		if (_moveDownTween != null)
+		{
+			StopCoroutine(_moveDownTween);
+		}
+		_moveDownTween = StartCoroutine(MovePlayLineTo(_to.y - _y / (_last ? 2f : 1f)));
 	}
 
-	private IEnumerator movePlayLineTo(float _toY){
+	public void MoveTo(float _y)
+	{
+		StartCoroutine(MovePlayLineTo(_y));
+	}
+
+	private IEnumerator MovePlayLineTo(float _toY)
+	{
 		Vector3 _from = transform.localPosition;
 		_to = _from;
 		_to.y = _toY;
 		//Debug.Log ("Moving from " + _from + " to " + _to + " [" + _toY + "]");
-		float _time = Mathf.Abs (_toY - _from.y) / speed;
+		float _time = Mathf.Abs(_toY - _from.y) / speed;
 		float _t = 0;
-		while (_t < _time){
-			float ratio = _t/_time;
-			transform.localPosition = Vector3.Lerp (_from, _to, ratio);
+		while (_t < _time)
+		{
+			float ratio = _t / _time;
+			transform.localPosition = Vector3.Lerp(_from, _to, ratio);
 			_t += Time.deltaTime;
 			yield return null;
 		}
 		transform.localPosition = _to;
-		moveDownTween = null;
+		_moveDownTween = null;
 	}
 
-	private IEnumerator scaleHeightTo(float _to){
-		float _from = background.rect.height;
+	private IEnumerator ScaleHeightTo(float _to)
+	{
+		float _from = _background.rect.height;
 		float _time = 0.1f;
 		float _t = 0;
-		while (_t < _time){
-			background.SetSizeWithCurrentAnchors (RectTransform.Axis.Vertical, Mathf.Lerp (_from, _to, _t / _time));
+		while (_t < _time)
+		{
+			_background.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Lerp(_from, _to, _t / _time));
 			_t += Time.deltaTime;
 			yield return null;
 		}
-		background.SetSizeWithCurrentAnchors (RectTransform.Axis.Vertical, _to);
+		_background.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _to);
 	}
 
-	private IEnumerator changeColorTo(Color _to){
-		Color _from = backgroundImage.color;
+	private IEnumerator ChangeColorTo(Color _to)
+	{
+		Color _from = _backgroundImage.color;
 		float _time = 0.3f;
 		float _t = 0;
-		while (_t < _time){
-			backgroundImage.color = Color.Lerp (_from, _to, _t / _time);
+		while (_t < _time)
+		{
+			_backgroundImage.color = Color.Lerp(_from, _to, _t / _time);
 			_t += Time.deltaTime;
 			yield return null;
 		}
-		backgroundImage.color = _to;
+		_backgroundImage.color = _to;
 	}
 }

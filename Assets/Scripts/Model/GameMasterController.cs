@@ -3,46 +3,53 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GameMasterController : MonoBehaviour {
+public class GameMasterController : MonoBehaviour
+{
 
 	private int best = 0;
 
 	public static GameMasterController _instance;
 	public static GameMasterController Instance
 	{
-		get {
+		get
+		{
 			if (_instance == null)
 			{
 				_instance = GameObject.FindObjectOfType<GameMasterController>();
-				
+
 				if (_instance == null)
 				{
 					GameObject container = new GameObject("GameController");
 					_instance = container.AddComponent<GameMasterController>();
 				}
 			}
-			
+
 			return _instance;
 		}
 	}
 
-	public void Awake(){
-		best = PlayerPrefs.HasKey (Utility.PlayerPrefKey.BEST.ToString ()) ? PlayerPrefs.GetInt (Utility.PlayerPrefKey.BEST.ToString ()) : 0;
+	public void Awake()
+	{
+		best = PlayerPrefs.HasKey(Utility.PlayerPrefKey.BEST.ToString()) ? PlayerPrefs.GetInt(Utility.PlayerPrefKey.BEST.ToString()) : 0;
 	}
 
-	public void SetBestScore(int _best){
-		if (_best > best) {
+	public void SetBestScore(int _best)
+	{
+		if (_best > best)
+		{
 			best = _best;
-			PlayerPrefs.SetInt (Utility.PlayerPrefKey.BEST.ToString (), _best);
+			PlayerPrefs.SetInt(Utility.PlayerPrefKey.BEST.ToString(), _best);
 		}
 	}
 
-	public int getBestScore(){
+	public int getBestScore()
+	{
 		return best;
 	}
 
-	public void startGame (int startLife = 1, string matchId = ""){
-		GetComponent<EndlessGameplayController> ().startGame (startLife, matchId);
+	public void StartGame(int startLife = 1, string matchId = "")
+	{
+		GetComponent<EndlessGameplayController>().StartGame(startLife, matchId);
 	}
 	/*
 	void Update () {

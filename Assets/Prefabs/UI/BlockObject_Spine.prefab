@@ -74,11 +74,11 @@ MonoBehaviour:
   initialSkinName: Number
   initialFlipX: 0
   initialFlipY: 0
-  startingAnimation: idle
+  startingAnimation: correct
   startingLoop: 0
   timeScale: 1
   freeze: 0
-  layoutScaleMode: 1
+  layoutScaleMode: 0
   referenceSize: {x: 100, y: 100}
   pivotOffset: {x: 0, y: 0}
   referenceScale: 1
@@ -121,3 +121,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc7c67db81a4a4f9197c4a41b3ab9972, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlockObjectController
+  _graphic: {fileID: 7365202932043871209}
+  _numbersAsset:
+  - {fileID: 11400000, guid: a5280292cf611fa488b22f8f8f84a6b6, type: 2}
+  - {fileID: 11400000, guid: 8f4885e9e2e772448a676fcec8ea180e, type: 2}
+  - {fileID: 11400000, guid: 1369b4bcedcf1f24abf94d1caab2f29b, type: 2}
+  - {fileID: 11400000, guid: 2a48e428d2f71d040a7e2f717e8e49b2, type: 2}
+  - {fileID: 11400000, guid: c1d0375328ecd804a99c8816030b099a, type: 2}
+  - {fileID: 11400000, guid: c013727bc97f33f4e91bc10983a5ab82, type: 2}
+  - {fileID: 11400000, guid: 5d860a30d29ad64438ade511a3d63a6a, type: 2}
+  - {fileID: 11400000, guid: 37c3fd3fbc8ccf24ba127cd732a6a160, type: 2}
+  - {fileID: 11400000, guid: 22e08b70d7600184ea3f806e2ad72462, type: 2}
+  - {fileID: 11400000, guid: a56f0bcbf19fb7c4895b1969f15582a1, type: 2}
+  - {fileID: 11400000, guid: e8cc8bf7f06c554449e73285d4fc1009, type: 2}
+  - {fileID: 11400000, guid: f47014826d7a7b544b5cc806eeec0bfa, type: 2}
+  - {fileID: 11400000, guid: ecb7d562cbf922a4f86d1e4b07b119a6, type: 2}

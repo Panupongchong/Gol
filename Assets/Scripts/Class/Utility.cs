@@ -39,7 +39,7 @@ public class Utility
             return wrapper.array;
         }
 
-        public static Dictionary<string, T> getJsonDictionary<T>(string json)
+        public static Dictionary<string, T> GetJsonDictionary<T>(string json)
         {
             string newJson = "{ \"array\": " + json + "}";
             WrapperDic<T> wrapper = JsonUtility.FromJson<WrapperDic<T>>(newJson);

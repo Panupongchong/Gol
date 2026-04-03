@@ -1,22 +1,20 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
+﻿public class Block
+{
 
-public class Block {
-	
-	private int m_number;
-	private Utility.PrimaryType m_type;
-	private bool m_inverse;
-	private bool m_mirror;
+	private int Number;
+	private Utility.PrimaryType Type;
+	private bool Inverse;
+	private bool Mirror;
 
-	public Block (int _number, Utility.PrimaryType _type, bool _mir){
-		m_number = _number;
-		m_type = _type;
-		m_inverse = _type == Utility.PrimaryType.Inv;
-		m_mirror = _mir;
+	public Block(int number, Utility.PrimaryType type, bool mir)
+	{
+		Number = number;
+		Type = type;
+		Inverse = type == Utility.PrimaryType.Inv;
+		Mirror = mir;
 	}
 
-	public int getNumber(){ return m_number; }
-	public Utility.PrimaryType getType(){ return m_type; }
-	public bool getInverse(){ return m_inverse; }
+	public int GetNumber() { return Number; }
+	public Utility.PrimaryType GetBlockType() { return Type; }
+	public bool GetInverse() { return Inverse; }
 }

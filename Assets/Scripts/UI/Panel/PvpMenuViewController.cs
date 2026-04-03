@@ -45,7 +45,7 @@ public class PvpMenuViewController : BaseViewController
     private void startMatch(string matchId)
     {
         Debug.Log("Start a match with " + matchId);
-        GameMasterController.Instance.startGame(3, matchId);
+        GameMasterController.Instance.StartGame(3, matchId);
         gameObject.SetActive(false);
     }
 

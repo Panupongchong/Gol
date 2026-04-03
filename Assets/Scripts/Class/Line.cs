@@ -1,30 +1,32 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-public class Line {
+public class Line
+{
+	public List<Block> LeftBlock;
+	public List<Block> RightBlock;
+	public int Answer;
 
-	public List<Block> m_leftBlock;
-	public List<Block> m_rightBlock;
-	public int m_answer;
+	private int left = 0;
+	private int right = 0;
 
-	int left = 0;
-	int right = 0;
-
-	public Line(){
-		m_leftBlock = new List<Block> ();
-		m_rightBlock = new List<Block> ();
+	public Line()
+	{
+		LeftBlock = new List<Block>();
+		RightBlock = new List<Block>();
 	}
 
-	public void addBlock(Block _block, int _side) //0 = left, 1 = right
+	public void AddBlock(Block block, int side) //0 = left, 1 = right
 	{
-		if(_side == 0){
-			m_leftBlock.Add(_block);
-			left += _block.getInverse () ? -_block.getNumber () : _block.getNumber ();
-		} else {
-			m_rightBlock.Add(_block);
-			right += _block.getInverse () ? -_block.getNumber () : _block.getNumber ();
+		if (side == 0)
+		{
+			LeftBlock.Add(block);
+			left += block.GetInverse() ? -block.GetNumber() : block.GetNumber();
 		}
-		m_answer = left > right ? 0 : (left < right ? 1 : 2);
+		else
+		{
+			RightBlock.Add(block);
+			right += block.GetInverse() ? -block.GetNumber() : block.GetNumber();
+		}
+		Answer = left > right ? 0 : (left < right ? 1 : 2);
 	}
 }

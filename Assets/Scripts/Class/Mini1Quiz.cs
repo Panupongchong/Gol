@@ -16,7 +16,7 @@ public class Mini1Quiz : Quiz
 	}
 
 	public override bool checkAnswer(int _answer){
-		if (_answer == m_lineList [0].m_answer) {
+		if (_answer == m_lineList [0].Answer) {
 			return true;
 		} else
 			return false;
