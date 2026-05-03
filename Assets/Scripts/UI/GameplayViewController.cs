@@ -24,8 +24,8 @@ public class GameplayViewController : BaseViewController
 	public int m_currentMode; // Current game mode
 
 	private float m_blockPadding; //x
-	private float m_halfScreenHeight;
-	private float m_quizPadding = 100; //y
+	private float _halfScreenHeight;
+	private float m_quizPadding = 50; //y
 	private float m_quizSize = 350;
 	private int _lineCount = 0;
 
@@ -55,7 +55,7 @@ public class GameplayViewController : BaseViewController
 		m_halfScreenHeight = Mathf.Ceil(Screen.height * ratio) / 2f;*/
 
 		//m_blockPadding = Screen.width / 4f;
-		m_halfScreenHeight = Screen.currentResolution.height / 2f;
+		_halfScreenHeight = Screen.currentResolution.height / 2f;
 		_quizObjectPool = new(() => Instantiate(QuizPrefab, transform));
 	}
 
@@ -74,23 +74,25 @@ public class GameplayViewController : BaseViewController
 	{
 		List<Line> linesData = ((Mini1Quiz)_quiz).getLines();
 		QuizPanelController _panel = _quizObjectPool.Get();
-		int _count = 0;
+		if(linesData.Count > 1)
+		{
+			Debug.Log("its now");
+		}
 		foreach (Line lineData in linesData)
 		{
-			_count++;
 			_panel.AddLine(lineData);
 		}
 
-		_lineCount += _count;
 		m_panelList.Add(_panel);
-		float _location = m_quizPadding + m_quizSize * (_lineCount - linesData.Count + 1) + (m_quizSize / 2 * (linesData.Count - 1));
-		_panel.transform.localPosition = Vector3.up * (_location + m_halfScreenHeight);
+		float _location = (m_quizPadding + m_quizSize) * (_lineCount + ((linesData.Count - 1) / 2f));
+		_lineCount += linesData.Count;
+		_panel.transform.localPosition = Vector3.up * (_location + _halfScreenHeight);
 		_panel.gameObject.SetActive(true);
-		if (_lineCount - _count == 0)
+		if (_lineCount - linesData.Count == 0)
 		{
 			_panel.AnimateActive();
 		}
-		_panel.MoveTo(_location - m_halfScreenHeight);
+		_panel.MoveTo(_location - _halfScreenHeight);
 	}
 
 	public void PlayCorrect(int _side)

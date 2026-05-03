@@ -48,6 +48,21 @@ public class SwipeController : MonoBehaviour
 
 	private void Update()
 	{
+		if (Input.GetKeyDown(KeyCode.LeftArrow))
+		{
+			OnLeftTap?.Invoke();
+			return;
+		}
+		if (Input.GetKeyDown(KeyCode.RightArrow))
+		{
+			OnRightTap?.Invoke();
+			return;
+		}
+		if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow))
+		{
+			OnMidTap?.Invoke();
+			return;
+		}
 
 #if UNITY_EDITOR
 		#region Standalone Inputs

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>GOL</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="modulepreload" href="js/quiz.js">
+  <link rel="modulepreload" href="js/quizFactory.js">
+  <link rel="modulepreload" href="js/swipeInput.js">
+  <link rel="modulepreload" href="js/gameController.js">
+  <link rel="preload" as="fetch" href="data/lv.json" crossorigin>
+</head>
+<body>
+  <div id="game-screen" class="screen">
+
+    <!-- HUD -->
+    <div id="hud">
+      <div id="time-bar-track"><div id="time-fill"></div></div>
+      <div id="hud-stats">
+        <div id="score-display">
+          <span class="stat-label">SCORE</span>
+          <span class="stat-value" id="score">0</span>
+        </div>
+        <div id="combo-display">
+          <span class="stat-label">COMBO</span>
+          <span class="stat-value" id="combo">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panels -->
+    <div id="quiz-area"></div>
+
+    <!-- Operator indicator -->
+    <div id="operator-bar">&gt;</div>
+
+    <!-- Invisible swipe/tap capture layer -->
+    <div id="swipe-area" tabindex="0"></div>
+
+  </div>
+
+  <script type="module">
+    import { GameController }  from './js/gameController.js';
+    import { SwipeInput }      from './js/swipeInput.js';
+
+    // ── DOM refs ──
+    const quizArea    = document.getElementById('quiz-area');
+    const timeFillEl  = document.getElementById('time-fill');
+    const scoreEl     = document.getElementById('score');
+    const comboEl     = document.getElementById('combo');
+    const swipeArea   = document.getElementById('swipe-area');
+
+    // ── State ──
+    let panels = []; // parallel to controller._quizList
+
+    // ── Build panel/row/block elements ──
+
+    function createBlockEl(block) {
+      const el = document.createElement('div');
+      el.className = `block t-${block.type}`;
+      // Show negative sign for inverse type
+      el.textContent = block.getInverse()
+        ? `-${block.getNumber()}`
+        : block.getNumber();
+      return el;
+    }
+
+    function createRowEl(line) {
+      const row = document.createElement('div');
+      row.className = 'quiz-row';
+
+      const left = document.createElement('div');
+      left.className = 'side left';
+      for (const b of line.LeftBlock) left.appendChild(createBlockEl(b));
+
+      const div = document.createElement('div');
+      div.className = 'divider';
+
+      const right = document.createElement('div');
+      right.className = 'side right';
+      for (const b of line.RightBlock) right.appendChild(createBlockEl(b));
+
+      row.append(left, div, right);
+      return row;
+    }
+
+    function createPanelEl(quiz) {
+      const panel = document.createElement('div');
+      panel.className = 'quiz-panel';
+      for (const line of quiz.getLines()) {
+        panel.appendChild(createRowEl(line));
+      }
+      return panel;
+    }
+
+    // ── Animation helpers ──
+
+    function animateBlocksCorrect(sideEl) {
+      sideEl.querySelectorAll('.block').forEach(b => {
+        b.classList.add('anim-correct');
+        // Remove from DOM after animation completes
+        b.addEventListener('animationend', () => b.remove(), { once: true });
+      });
+    }
+
+    function animateBlocksFade(sideEl) {
+      sideEl.querySelectorAll('.block').forEach(b => {
+        b.style.transition = 'opacity 0.15s ease';
+        b.style.opacity = '0';
+        setTimeout(() => b.remove(), 160);
+      });
+    }
+
+    function animateBlocksIncorrect(sideEl) {
+      sideEl.querySelectorAll('.block').forEach(b => {
+        b.classList.add('anim-incorrect');
+        b.addEventListener('animationend', () => b.classList.remove('anim-incorrect'), { once: true });
+      });
+    }
+
+    // ── View update functions ──
+
+    function addQuiz(quiz) {
+      const panelEl = createPanelEl(quiz);
+      quizArea.appendChild(panelEl);
+      panels.push(panelEl);
+      if (panels.length === 1) activateTop();
+    }
+
+    function activateTop() {
+      if (panels.length === 0) return;
+      panels[0].classList.add('active');
+    }
+
+    function onCorrect(side, done) {
+      if (panels.length === 0) return;
+      const panel = panels[0];
+      const row   = panel.querySelector('.quiz-row');
+      if (!row) return;
+
+      const leftEl  = row.querySelector('.side.left');
+      const rightEl = row.querySelector('.side.right');
+
+      // Animate winning side(s) with the correct flash; losing side fades out
+      if (side === 0) { animateBlocksCorrect(leftEl);  animateBlocksFade(rightEl); }
+      if (side === 1) { animateBlocksFade(leftEl);  animateBlocksCorrect(rightEl); }
+      if (side === 2) { animateBlocksCorrect(leftEl);  animateBlocksCorrect(rightEl); }
+
+      // Remove the answered row after block animations settle
+      setTimeout(() => {
+        row.remove();
+
+        if (done) {
+          panels.shift();
+          // Measure real height first, then animate to 0 so the easing
+          // covers the full range instead of starting from a 400px guess.
+          const h = panel.offsetHeight;
+          panel.style.maxHeight    = h + 'px';
+          panel.style.overflow     = 'hidden';
+          panel.style.transition   = 'opacity 0.18s ease, max-height 0.26s ease, margin-bottom 0.26s ease';
+          panel.classList.add('exiting');
+          // Double rAF: first paints the pinned height, second starts the collapse
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            panel.style.maxHeight    = '0';
+            panel.style.marginBottom = '0';
+            panel.style.opacity      = '0';
+          }));
+          setTimeout(() => {
+            panel.remove();
+            activateTop();
+          }, 280);
+        }
+      }, 300);
+    }
+
+    function onIncorrect(side) {
+      if (panels.length === 0) return;
+      const row = panels[0].querySelector('.quiz-row');
+      if (!row) return;
+
+      if (side === 0 || side === 2) animateBlocksIncorrect(row.querySelector('.side.left'));
+      if (side === 1 || side === 2) animateBlocksIncorrect(row.querySelector('.side.right'));
+    }
+
+    function onGameEnd(result) {
+      sessionStorage.setItem('gameResult', JSON.stringify(result));
+      window.location.href = result.isDuel ? 'duel-result.html' : 'result.html';
+    }
+
+    // ── Bootstrap ──
+
+    async function init() {
+      const lvData = await fetch('data/lv.json').then(r => r.json());
+
+      const controller = new GameController(lvData);
+
+      // Wire callbacks
+      controller.onScoreUpdate = v => { scoreEl.textContent = v; };
+      controller.onComboUpdate = v => { comboEl.textContent = v; };
+      controller.onTimeFill    = f => {
+        timeFillEl.style.transform = `scaleX(${Math.max(0, f)})`;
+      };
+      controller.onQuizAdded  = quiz => addQuiz(quiz);
+      controller.onCorrect    = (side, done) => onCorrect(side, done);
+      controller.onIncorrect  = side => onIncorrect(side);
+      controller.onGameEnd    = result => onGameEnd(result);
+
+      // Wire input
+      const swipe = new SwipeInput(swipeArea);
+      swipeArea.addEventListener('lefttap',  () => controller.answerLeft());
+      swipeArea.addEventListener('righttap', () => controller.answerRight());
+      swipeArea.addEventListener('midtap',   () => controller.answerMid());
+      swipeArea.addEventListener('swipe',    () => controller.answerSwipe());
+
+      // Handle duel launch from sessionStorage
+      const duelRaw = sessionStorage.getItem('pendingDuelChallenge');
+      if (duelRaw) {
+        sessionStorage.removeItem('pendingDuelChallenge');
+        controller.startDuelGame(JSON.parse(duelRaw));
+      } else {
+        controller.startGame();
+      }
+
+      swipeArea.focus();
+    }
+
+    init().catch(console.error);
+  </script>
+</body>
+</html>

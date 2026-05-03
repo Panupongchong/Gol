@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine.Pool;
+using DG.Tweening;
 
 public struct SubQuiz
 {
@@ -198,37 +199,16 @@ public class QuizPanelController : MonoBehaviour
 		_last = true;
 	}
 
-	public void MoveDown(float _y)
+	public void MoveDown(float y)
 	{
-		if (_moveDownTween != null)
-		{
-			StopCoroutine(_moveDownTween);
-		}
-		_moveDownTween = StartCoroutine(MovePlayLineTo(_to.y - _y / (_last ? 2f : 1f)));
+		transform.DOKill();
+		transform.DOLocalMoveY(transform.localPosition.y - y / (_last ? 2f : 1f), Mathf.Abs(y - transform.localPosition.y) / speed);
 	}
 
-	public void MoveTo(float _y)
+	public void MoveTo(float y)
 	{
-		StartCoroutine(MovePlayLineTo(_y));
-	}
-
-	private IEnumerator MovePlayLineTo(float _toY)
-	{
-		Vector3 _from = transform.localPosition;
-		_to = _from;
-		_to.y = _toY;
-		//Debug.Log ("Moving from " + _from + " to " + _to + " [" + _toY + "]");
-		float _time = Mathf.Abs(_toY - _from.y) / speed;
-		float _t = 0;
-		while (_t < _time)
-		{
-			float ratio = _t / _time;
-			transform.localPosition = Vector3.Lerp(_from, _to, ratio);
-			_t += Time.deltaTime;
-			yield return null;
-		}
-		transform.localPosition = _to;
-		_moveDownTween = null;
+		transform.DOKill();
+		transform.DOLocalMoveY(y, Mathf.Abs(y - transform.localPosition.y) / speed);
 	}
 
 	private IEnumerator ScaleHeightTo(float _to)

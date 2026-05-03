@@ -1,0 +1,309 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #1a1a2e;
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Shared screen wrapper ── */
+.screen {
+  width: 100%;
+  max-width: 430px;
+  height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ════════════════════════════
+   GAME SCREEN
+   ════════════════════════════ */
+#game-screen {
+  background: #16213e;
+}
+
+/* HUD */
+#hud {
+  flex: 0 0 auto;
+  padding: 8px 16px 4px;
+}
+
+#time-bar-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+#time-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #e94560, #f5a623);
+  border-radius: 4px;
+  transform-origin: left center;
+  transition: transform 0.1s linear;
+}
+
+#hud-stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+#score-display, #combo-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Quiz area — column-reverse so panels[0] (active) is at the bottom,
+   matching Unity where the active panel is nearest the player and
+   remaining panels slide DOWN when it's completed. */
+#quiz-area {
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 0 16px 12px;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start; /* flex-start in reverse = anchor to bottom */
+  gap: 0; /* spacing handled by margin-bottom so JS can animate it */
+}
+
+@keyframes panel-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Quiz panel — column-reverse mirrors the area layout so line[0] (active)
+   is at the visual bottom while remaining the first DOM child (logic unchanged). */
+.quiz-panel {
+  background: rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  margin-bottom: 8px;
+  animation: panel-enter 0.3s ease both;
+  transition: background 0.25s ease;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.quiz-panel.active {
+  background: rgba(220, 50, 50, 0.35);
+  border-color: rgba(220,80,80,0.4);
+}
+
+/* JS animates max-height + margin-bottom inline; this just blocks interaction */
+.quiz-panel.exiting {
+  pointer-events: none;
+}
+
+/* Quiz row (one Line) */
+.quiz-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  gap: 6px;
+}
+
+.quiz-row + .quiz-row {
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.side {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.divider {
+  width: 2px;
+  height: 48px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 1px;
+  flex: 0 0 auto;
+}
+
+/* Block (placeholder for Phase 1) */
+.block {
+  width: 58px;
+  height: 58px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a2e;
+  position: relative;
+  transition: transform 0.1s ease;
+}
+
+/* Type colours */
+.t-1 { background: #f0f0f0; }           /* Num   — white  */
+.t-2 { background: #7b8cde; color:#fff;} /* Inv   — blue   */
+.t-3 { background: #f5e642; }            /* Wrd   — yellow */
+.t-4 { background: #56c785; }            /* Dic   — green  */
+.t-5 { background: #f5923e; }            /* Fiv   — orange */
+.t-6 { background: #e05ee0; color:#fff;} /* Rom   — purple */
+.t-7 { background: #4fc3f7; }            /* Clk   — cyan   */
+
+/* Block animations */
+@keyframes block-correct {
+  0%   { transform: scale(1);   opacity: 1; }
+  40%  { transform: scale(1.35); opacity: 1; background: #7fff7f; }
+  100% { transform: scale(0);   opacity: 0; }
+}
+
+@keyframes block-incorrect {
+  0%,100% { transform: translateX(0); }
+  15%  { transform: translateX(-9px); background: #ff5555; }
+  35%  { transform: translateX( 9px); }
+  55%  { transform: translateX(-6px); }
+  75%  { transform: translateX( 4px); }
+}
+
+.block.anim-correct {
+  animation: block-correct 0.38s ease forwards;
+}
+
+.block.anim-incorrect {
+  animation: block-incorrect 0.4s ease;
+}
+
+/* Operator bar */
+#operator-bar {
+  flex: 0 0 auto;
+  text-align: center;
+  padding: 10px 0 14px;
+  font-size: 34px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 2px;
+}
+
+/* Swipe overlay — sits over everything below HUD */
+#swipe-area {
+  position: absolute;
+  inset: 0;
+  top: 56px; /* below HUD */
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* ════════════════════════════
+   MAIN MENU SCREEN
+   ════════════════════════════ */
+#menu-screen {
+  background: #16213e;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+}
+
+#menu-title {
+  font-size: 64px;
+  font-weight: 900;
+  color: #e94560;
+  letter-spacing: 4px;
+  text-shadow: 0 0 30px rgba(233,69,96,0.6);
+}
+
+.menu-btn {
+  padding: 16px 48px;
+  border-radius: 50px;
+  border: none;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.menu-btn:active { transform: scale(0.95); opacity: 0.85; }
+
+.btn-primary   { background: #e94560; color: #fff; }
+.btn-secondary { background: rgba(255,255,255,0.1); color: #fff;
+                 border: 1px solid rgba(255,255,255,0.25); }
+
+/* ════════════════════════════
+   RESULT SCREEN
+   ════════════════════════════ */
+#result-screen {
+  background: #16213e;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 24px;
+}
+
+#result-title {
+  font-size: 36px;
+  font-weight: 900;
+  color: #f5a623;
+  letter-spacing: 3px;
+}
+
+.result-board {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.result-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.result-item .label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.result-item .value {
+  font-size: 38px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+}
+
+.result-item .value.best { color: #f5a623; }
+
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}

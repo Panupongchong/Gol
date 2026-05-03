@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>GOL — Result</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div id="result-screen" class="screen">
+
+    <div id="result-title">RESULT</div>
+
+    <div class="result-board">
+      <div class="result-item">
+        <span class="label">SCORE</span>
+        <span class="value" id="r-score">0</span>
+      </div>
+      <div class="result-item">
+        <span class="label">COMBO</span>
+        <span class="value" id="r-combo">0</span>
+      </div>
+      <div class="result-item">
+        <span class="label">BONUS</span>
+        <span class="value" id="r-bonus">0</span>
+      </div>
+      <div class="result-item">
+        <span class="label">BEST</span>
+        <span class="value best" id="r-best">0</span>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="menu-btn btn-primary"  id="btn-again">PLAY AGAIN</button>
+      <!-- Challenge Friend button — shown only in solo mode; hidden in duel mode -->
+      <button class="menu-btn btn-secondary" id="btn-challenge" style="display:none">
+        CHALLENGE FRIEND
+      </button>
+      <button class="menu-btn btn-secondary" id="btn-menu">MAIN MENU</button>
+    </div>
+
+  </div>
+
+  <script type="module">
+    const result = JSON.parse(sessionStorage.getItem('gameResult') || '{}');
+    const best   = parseInt(localStorage.getItem('bestScore') || '0', 10);
+
+    const score = result.score ?? 0;
+    const combo = result.combo ?? 0;
+    const bonus = result.bonus ?? 0;
+
+    // Persist best score
+    const newBest = Math.max(best, score);
+    localStorage.setItem('bestScore', newBest);
+
+    document.getElementById('r-score').textContent = score;
+    document.getElementById('r-combo').textContent = combo;
+    document.getElementById('r-bonus').textContent = bonus;
+    document.getElementById('r-best').textContent  = newBest;
+
+    // Show Challenge Friend only for solo games (duel result goes to duel-result.html)
+    if (!result.isDuel) {
+      document.getElementById('btn-challenge').style.display = '';
+    }
+
+    document.getElementById('btn-again').addEventListener('click', () => {
+      sessionStorage.removeItem('gameResult');
+      window.location.href = 'game.html';
+    });
+
+    document.getElementById('btn-menu').addEventListener('click', () => {
+      sessionStorage.removeItem('gameResult');
+      window.location.href = 'index.html';
+    });
+
+    // Phase 4: Challenge Friend — will generate duel URL via duelCrypto.js
+    document.getElementById('btn-challenge').addEventListener('click', () => {
+      alert('Challenge Friend — coming in Phase 4 (duel flow)');
+    });
+  </script>
+</body>
+</html>

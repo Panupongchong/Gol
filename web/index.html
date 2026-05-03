@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>GOL</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div id="menu-screen" class="screen">
+
+    <div id="menu-title">GOL</div>
+
+    <button class="menu-btn btn-primary"   id="btn-play">PLAY</button>
+    <button class="menu-btn btn-secondary" id="btn-pvp" style="opacity:0.4;pointer-events:none">
+      PVP (coming soon)
+    </button>
+
+  </div>
+
+  <script>
+    document.getElementById('btn-play').addEventListener('click', () => {
+      window.location.href = 'game.html';
+    });
+  </script>
+</body>
+</html>
