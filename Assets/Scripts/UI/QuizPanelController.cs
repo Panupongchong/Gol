@@ -106,37 +106,21 @@ public class QuizPanelController : MonoBehaviour
 
 	public bool PlayCorrect(int side)
 	{
+		var left = _subQuizzes[0].LeftBlock;
+		var right = _subQuizzes[0].RightBlock;
 		switch (side)
 		{
 			case 0:
-				_subQuizzes[0].LeftBlock.ForEach(x =>
-				{
-					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
-				});
-				_subQuizzes[0].RightBlock.ForEach(x =>
-				{
-					BlockObjectPoolController.Instance.returnBlock(x);
-				});
+				StartCoroutine(AdjustTransInTheEndOfFrame(left));
+				right.ForEach(BlockObjectPoolController.Instance.returnBlock);
 				break;
 			case 1:
-				_subQuizzes[0].LeftBlock.ForEach(x =>
-				{
-					BlockObjectPoolController.Instance.returnBlock(x);
-				});
-				_subQuizzes[0].RightBlock.ForEach(x =>
-				{
-					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
-				});
+				left.ForEach(BlockObjectPoolController.Instance.returnBlock);
+				StartCoroutine(AdjustTransInTheEndOfFrame(right));
 				break;
 			case 2:
-				_subQuizzes[0].LeftBlock.ForEach(x =>
-				{
-					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
-				});
-				_subQuizzes[0].RightBlock.ForEach(x =>
-				{
-					StartCoroutine(AdjustTransInTheEndOfFrame(x, x.transform.position));
-				});
+				StartCoroutine(AdjustTransInTheEndOfFrame(left));
+				StartCoroutine(AdjustTransInTheEndOfFrame(right));
 				break;
 		}
 		_subQuizzes.RemoveAt(0);
@@ -152,12 +136,18 @@ public class QuizPanelController : MonoBehaviour
 		}
 	}
 
-	private IEnumerator AdjustTransInTheEndOfFrame(BaseBlockObject obj, Vector3 position)
+	private IEnumerator AdjustTransInTheEndOfFrame(List<BaseBlockObject> blocks)
 	{
+		Vector3[] positions = new Vector3[blocks.Count];
+		for (int i = 0; i < blocks.Count; i++)
+			positions[i] = blocks[i].transform.position;
 		yield return new WaitForEndOfFrame();
-		obj.transform.position = position;
-		obj.gameObject.SetActive(true);
-		obj.AnimateCorrect();
+		for (int i = 0; i < blocks.Count; i++)
+		{
+			blocks[i].transform.position = positions[i];
+			blocks[i].gameObject.SetActive(true);
+			blocks[i].AnimateCorrect();
+		}
 	}
 
 	private IEnumerator DisableSelf(float _time)

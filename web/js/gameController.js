@@ -5,8 +5,8 @@ const MAX_QUIZ     = 4;   // matches BaseGameplayController._maxQuiz
 const ANSWER_DELAY = 0.3; // seconds of input lockout after each answer
 
 export class GameController {
-  constructor(lvData) {
-    this._factory  = new Mini1QuizFactory(lvData);
+  constructor(lvData, rng = () => Math.random()) {
+    this._factory  = new Mini1QuizFactory(lvData, rng);
     this._playing  = false;
     this._quizList = [];
     this._lvData   = lvData;
@@ -23,6 +23,7 @@ export class GameController {
     this.onCorrect     = null; // (side: 0|1|2, done: bool) => void
     this.onIncorrect   = null; // (side: 0|1|2) => void
     this.onGameEnd     = null; // (result: object) => void
+    this.onLevelUpdate = null; // (lv: number) => void
   }
 
   startGame() {
@@ -106,6 +107,7 @@ export class GameController {
     if (this._quizList.length === 0) {
       // All 4 quizzes in this wave done → refill
       if (this._lvData[(this._lv + 1).toString()]) this._lv++;
+      this.onLevelUpdate?.(this._lv);
       this._generatePlay();
     }
   }

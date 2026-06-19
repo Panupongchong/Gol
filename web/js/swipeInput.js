@@ -36,15 +36,18 @@ export class SwipeInput {
       return;
     }
 
-    // Tap — determine zone by X position relative to element width
-    const rect   = this._el.getBoundingClientRect();
-    const x      = this._startX - rect.left;
-    const mid    = rect.width / 2;
-    const margin = 40; // ±40px from centre = mid zone
+    // Tap on the = divider hexagon → equal answer
+    if (document.elementsFromPoint(this._startX, this._startY)
+          .some(el => el.closest && el.closest('.divider'))) {
+      this._emit('midtap');
+      return;
+    }
 
-    if (x < mid - margin)      this._emit('lefttap');
-    else if (x > mid + margin) this._emit('righttap');
-    else                        this._emit('midtap');
+    // Tap — left or right half of the screen
+    const rect = this._el.getBoundingClientRect();
+    const x    = this._startX - rect.left;
+    if (x < rect.width / 2) this._emit('lefttap');
+    else                     this._emit('righttap');
   }
 
   _onKey(e) {

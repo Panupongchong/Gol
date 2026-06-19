@@ -19,8 +19,9 @@ const TERTIARY_ORDER = [
 ];
 
 export class Mini1QuizFactory {
-  constructor(lvData) {
+  constructor(lvData, rng = () => this._rng()) {
     this._lvData = lvData;
+    this._rng    = rng;
   }
 
   generateQuiz(lv) {
@@ -39,10 +40,10 @@ export class Mini1QuizFactory {
 
       for (let side = 0; side < 2; side++) {
         // Range(0, 13) in Unity = 0..12 inclusive
-        let no = Math.floor(Math.random() * 13);
+        let no = Math.floor(this._rng() * 13);
 
         if (this._randomBool('duo')) {
-          const no2 = Math.floor(Math.random() * (no + 1));
+          const no2 = Math.floor(this._rng() * (no + 1));
           no -= no2;
           line.addBlock(new Block(no2, pri[side], this._randomBool('mir')), side);
         }
@@ -57,7 +58,7 @@ export class Mini1QuizFactory {
   }
 
   _randomTertiary() {
-    const r = Math.random();
+    const r = this._rng();
     let acc = 0;
     for (const [key, val] of TERTIARY_ORDER) {
       if (this._lv[key] !== undefined) {
@@ -69,7 +70,7 @@ export class Mini1QuizFactory {
   }
 
   _randomPrimary() {
-    const r = Math.random();
+    const r = this._rng();
     let acc = 0;
     for (const [key, type] of PRIMARY_ORDER) {
       if (this._lv[key] !== undefined) {
@@ -82,6 +83,6 @@ export class Mini1QuizFactory {
 
   _randomBool(key) {
     const chance = this._lv[key];
-    return chance !== undefined && Math.random() < chance;
+    return chance !== undefined && this._rng() < chance;
   }
 }

@@ -4,6 +4,12 @@ using UnityEngine;
 
 public class Mini1QuizFactory : QuizFactory {
 
+	private static readonly Utility.Tertiary[] _tertiaryValues = (Utility.Tertiary[])System.Enum.GetValues(typeof(Utility.Tertiary));
+	private static readonly Utility.PrimaryType[] _primaryValues = (Utility.PrimaryType[])System.Enum.GetValues(typeof(Utility.PrimaryType));
+	private const string _mulKey = "mul";
+	private const string _duoKey = "duo";
+	private const string _mirKey = "mir";
+
 	private Dictionary<string, object> m_rollInformation;
 	private string m_lv = "";
 
@@ -49,7 +55,7 @@ public class Mini1QuizFactory : QuizFactory {
 		float _ranValue = Random.Range(0f,1f);
 		//Build chance list
 		float _accumulative = 0f;
-		foreach (Utility.Tertiary _type in System.Enum.GetValues(typeof(Utility.Tertiary))) {
+		foreach (Utility.Tertiary _type in _tertiaryValues) {
 			string _typeStr = _type.ToString ().ToLower ();
 			if (GameInformationMaster.Instance.lvMasterData [m_lv].ContainsKey (_typeStr)) {
 				_accumulative += float.Parse (GameInformationMaster.Instance.lvMasterData [m_lv] [_typeStr].ToString ());
@@ -67,7 +73,7 @@ public class Mini1QuizFactory : QuizFactory {
 		float _ranValue = Random.Range(0f,1f);
 		//Build chance list
 		float _accumulative = 0f;
-		foreach (Utility.PrimaryType _type in System.Enum.GetValues(typeof(Utility.PrimaryType))) {
+		foreach (Utility.PrimaryType _type in _primaryValues) {
 			string _typeStr = _type.ToString ().ToLower ();
 			if (GameInformationMaster.Instance.lvMasterData [m_lv].ContainsKey (_typeStr)) {
 				_accumulative += float.Parse (GameInformationMaster.Instance.lvMasterData [m_lv] [_typeStr].ToString ());
@@ -82,7 +88,7 @@ public class Mini1QuizFactory : QuizFactory {
 		
 	private bool randomMultipleType(){
 		float _ranValue = Random.Range(0f,1f);
-		string _typeStr = Utility.SecondaryType.MUL.ToString ().ToLower ();
+		string _typeStr = _mulKey;
 		if (GameInformationMaster.Instance.lvMasterData [m_lv].ContainsKey (_typeStr)) {
 			float _chance = float.Parse (GameInformationMaster.Instance.lvMasterData [m_lv] [_typeStr].ToString ());
 			if (_ranValue < _chance) {
@@ -94,7 +100,7 @@ public class Mini1QuizFactory : QuizFactory {
 
 	private bool randomDuoType(){
 		float _ranValue = Random.Range(0f,1f);
-		string _typeStr = Utility.SecondaryType.DUO.ToString ().ToLower ();
+		string _typeStr = _duoKey;
 		if (GameInformationMaster.Instance.lvMasterData [m_lv].ContainsKey (_typeStr)) {
 			float _chance = float.Parse (GameInformationMaster.Instance.lvMasterData [m_lv] [_typeStr].ToString ());
 			if (_ranValue < _chance) {
@@ -107,7 +113,7 @@ public class Mini1QuizFactory : QuizFactory {
 
 	private bool randomMirrorType(){
 		float _ranValue = Random.Range(0f,1f);
-		string _typeStr = Utility.SecondaryType.MIR.ToString ().ToLower ();
+		string _typeStr = _mirKey;
 		if (GameInformationMaster.Instance.lvMasterData [m_lv].ContainsKey (_typeStr)) {
 			float _chance = float.Parse (GameInformationMaster.Instance.lvMasterData [m_lv] [_typeStr].ToString ());
 			if (_ranValue < _chance) {

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Spine Test</title>
+  <script src="js/spine-canvas.js"></script>
+  <style>
+    body { background: #222; display: flex; flex-direction: column; align-items: center; padding: 20px; font-family: monospace; color: #ccc; }
+    canvas { background: #444; border: 1px solid #666; display: block; }
+    pre { margin-top: 12px; font-size: 12px; max-width: 600px; white-space: pre-wrap; }
+    select, button { margin: 8px 4px; padding: 6px 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>Spine Block Test</h2>
+  <div>
+    Skeleton:
+    <select id="sel-skel">
+      <option value="00">00</option><option value="01">01</option><option value="02">02</option>
+      <option value="03">03</option><option value="04">04</option><option value="05">05</option>
+    </select>
+    Skin:
+    <select id="sel-skin">
+      <option>Number</option><option>Negative</option><option>Word</option>
+      <option>Dice</option><option>FiveBar</option><option>Roman</option><option>Clock</option>
+    </select>
+    Anim:
+    <select id="sel-anim">
+      <option>idle</option><option>active</option><option>correct</option><option>incorrect</option>
+    </select>
+    <button id="btn-load">Load</button>
+  </div>
+  <canvas id="c" width="300" height="300"></canvas>
+  <pre id="log">Ready — press Load</pre>
+
+  <script>
+    const logEl = document.getElementById('log');
+    function log(msg) { logEl.textContent += msg + '\n'; console.log(msg); }
+
+    const BASE = 'spine';
+    let _atlas = null;
+    let _raf = null;
+
+    async function loadAtlas() {
+      if (_atlas) return _atlas;
+
+      log('Loading atlas images...');
+      const names = [
+        'VisualTypes.png','VisualTypes_2.png','VisualTypes_3.png','VisualTypes_4.png',
+        'VisualTypes_5.png','VisualTypes_6.png','VisualTypes_7.png',
+      ];
+      const images = {};
+      await Promise.all(names.map(name => new Promise((res, rej) => {
+        const img = new Image();
+        img.onload  = () => { images[name] = img; log('  loaded ' + name + ' (' + img.naturalWidth + 'x' + img.naturalHeight + ')'); res(); };
+        img.onerror = () => rej(new Error('Failed to load ' + name));
+        img.src = BASE + '/' + name;
+      })));
+
+      const atlasText = await fetch(BASE + '/VisualTypes.atlas').then(r => r.text());
+      _atlas = new spine.TextureAtlas(atlasText, path => {
+        if (!images[path]) throw new Error('Atlas references unknown image: ' + path);
+        return new spine.CanvasTexture(images[path]);
+      });
+      // spine-canvas 4.2 IIFE doesn't store the loader return value on page.texture —
+      // set page textures manually, then propagate to each region.
+      for (const page of _atlas.pages) {
+        if (!page.texture) {
+          if (!images[page.name]) throw new Error('No image for page: ' + page.name);
+          page.texture = new spine.CanvasTexture(images[page.name]);
+          log('  set texture for page: ' + page.name);
+        }
+        for (const region of page.regions) {
+          region.texture = page.texture;
+        }
+      }
+      log('Atlas loaded. Pages: ' + _atlas.pages.length);
+      return _atlas;
+    }
+
+    document.getElementById('btn-load').addEventListener('click', async () => {
+      if (_raf) { cancelAnimationFrame(_raf); _raf = null; }
+      logEl.textContent = '';
+
+      const skelId  = document.getElementById('sel-skel').value;
+      const skinName = document.getElementById('sel-skin').value;
+      const animName = document.getElementById('sel-anim').value;
+
+      try {
+        const atlas = await loadAtlas();
+
+        log('Loading skeleton ' + skelId + '...');
+        const loader = new spine.AtlasAttachmentLoader(atlas);
+        const parser = new spine.SkeletonJson(loader);
+        const skelData = await fetch(BASE + '/' + skelId + '.json').then(r => r.json())
+                                                                    .then(d => parser.readSkeletonData(d));
+        log('Skeleton loaded. Skins: ' + skelData.skins.map(s => s.name).join(', '));
+        log('Animations: ' + skelData.animations.map(a => a.name).join(', '));
+
+        const skeleton = new spine.Skeleton(skelData);
+        skeleton.setSkinByName(skinName);
+        skeleton.setToSetupPose();
+        log('Skin set: ' + skinName);
+
+        const stateData = new spine.AnimationStateData(skelData);
+        const state     = new spine.AnimationState(stateData);
+        state.setAnimation(0, animName, true);
+        log('Animation set: ' + animName);
+
+        // Check drawOrder slots
+        state.update(0.016);
+        state.apply(skeleton);
+        skeleton.updateWorldTransform(spine.Physics.update);
+        log('drawOrder slots: ' + skeleton.drawOrder.map(s => s.data.name + '=' + (s.getAttachment()?.name ?? 'null')).join(', '));
+
+        const canvas = document.getElementById('c');
+        const ctx    = canvas.getContext('2d');
+        const renderer = new spine.SkeletonRenderer(ctx);
+        log('SkeletonRenderer created: ' + (renderer ? 'OK' : 'FAILED'));
+        log('renderer methods: ' + Object.getOwnPropertyNames(Object.getPrototypeOf(renderer)).join(', '));
+
+        // Draw a test rect to confirm canvas + transforms work
+        ctx.save();
+        ctx.fillStyle = 'red';
+        ctx.fillRect(100, 100, 100, 100);
+        ctx.restore();
+        log('Test rect drawn (should see red square in canvas)');
+
+        let last = performance.now();
+        let frame = 0;
+
+        function loop(now) {
+          const dt = Math.min((now - last) / 1000, 0.064);
+          last = now;
+
+          try {
+            state.update(dt);
+            state.apply(skeleton);
+            skeleton.updateWorldTransform(spine.Physics.update);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.scale(1, -1);
+            renderer.draw(skeleton);
+            ctx.restore();
+
+            if (frame++ === 2) {
+              const px = ctx.getImageData(150, 150, 1, 1).data;
+              log('Pixel at center after 3 frames: rgba(' + Array.from(px).join(',') + ')');
+            }
+
+            _raf = requestAnimationFrame(loop);
+          } catch (e) {
+            log('LOOP ERROR at frame ' + frame + ': ' + e.message);
+            console.error(e);
+          }
+        }
+
+        _raf = requestAnimationFrame(loop);
+
+      } catch (e) {
+        log('ERROR: ' + e.message);
+        console.error(e);
+      }
+    });
+  </script>
+</body>
+</html>

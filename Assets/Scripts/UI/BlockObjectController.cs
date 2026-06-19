@@ -30,7 +30,7 @@ public class BlockObjectController : BaseBlockObject
 
 	public override void Initialise(int number, Utility.PrimaryType primaryType, bool isInverse)
 	{
-		_label = "MG" + _mode + "-" + primaryType + "-" + number.ToString("D2");
+		_label = $"MG{_mode}-{primaryType}-{number:D2}";
 
 		_isDisposing = false;
 		_isPlaying = false;

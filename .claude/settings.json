@@ -1,7 +1,37 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\" -Directory)",
+      "Bash(Select-Object Name)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\" -Force | Where-Object { $_.PSIsContainer } | Select-Object FullName)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\" | Where-Object { $_.PSIsContainer })",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\\\\web\" -Recurse -File)",
+      "Bash(Select-Object FullName, Length)",
+      "Bash(Sort-Object FullName)",
+      "Read(//c/Users/Dell/.claude/plans/**)",
+      "Bash(grep -E \"\\\\.\\(js|skel|atlas|json\\)$\")",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\\\\web\" -Recurse -Depth 3 | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)",
+      "WebSearch",
+      "WebFetch(domain:unpkg.com)",
+      "WebFetch(domain:app.unpkg.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:esotericsoftware.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\\\\web\\\\spine\\\\\" | Select-Object Name)",
+      "Bash(curl -s \"https://unpkg.com/@esotericsoftware/spine-canvas@4.2/dist/iife/spine-canvas.js\")",
+      "Bash(curl -s -L \"https://unpkg.com/@esotericsoftware/spine-canvas@4.2/dist/iife/spine-canvas.js\")",
+      "Read(//tmp/**)",
+      "Bash(curl -sL \"https://unpkg.com/@esotericsoftware/spine-canvas@4.2/dist/iife/spine-canvas.js\")",
+      "Bash(mkdir -p \"c:\\\\Users\\\\Dell\\\\Documents\\\\Work\\\\Gol\\\\export\")",
+      "Bash(zip -r \"../export/gol.zip\" . --exclude \"spine-test.html\")",
+      "Bash(curl -L \"https://unpkg.com/@esotericsoftware/spine-canvas@4.2/dist/iife/spine-canvas.js\" -o \"c:/Users/Dell/Documents/Work/Gol/web/js/spine-canvas.js\" --progress-bar)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(git add *)",
+      "Bash(git reset *)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Dell\\Documents\\Work\\Gol\\Assets\\CasualGameSounds"
     ]
   }
 }
