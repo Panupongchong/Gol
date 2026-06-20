@@ -58,15 +58,32 @@
       <span id="countdown-text"></span>
     </div>
 
+    <!-- Items bar (gameplay only) -->
+    <div id="items-bar">
+      <button class="item" id="item-freeze" data-item="freeze" type="button">
+        <span class="item-icon">❄</span>
+        <span class="item-name">FREEZE</span>
+        <span class="item-badge" id="item-freeze-badge">×1</span>
+      </button>
+      <div class="item" id="item-double" data-item="double">
+        <span class="item-icon">×2</span>
+        <span class="item-name">DOUBLE</span>
+      </div>
+      <div class="item" id="item-shield" data-item="shield">
+        <span class="item-icon">🛡</span>
+        <span class="item-name">SHIELD</span>
+      </div>
+    </div>
+
   </div>
 
   <script type="module">
     import { GameController }  from './js/gameController.js';
     import { SwipeInput }      from './js/swipeInput.js';
-    import { load as spineLoad, createBlock, destroyAll, playAnim, playIncorrect } from './js/spineRenderer.js';
+    import { load as spineLoad, createBlock, createBoard, destroyAll, playAnim, playActive, playIncorrect, playBoardAnim } from './js/spineRenderer.js';
     import { loadSfx, play as playSfx, unlockAudio } from './js/sfx.js';
 
-    const SKIN_MAP = { 1:'Number', 2:'Negative', 3:'Word', 4:'Dice', 5:'FiveBar', 6:'Roman', 7:'Clock' };
+    const SKIN_MAP = { 1:'Number', 2:'Negative', 3:'Word', 4:'Dice', 5:'FiveBar', 6:'Roman', 7:'Clock', 8:'NumberTH', 9:'WordTH' };
 
     // Mulberry32 seeded PRNG — same seed → identical quiz sequence
     function makeRng(seed) {
@@ -86,6 +103,7 @@
         const overlay = document.getElementById('countdown');
         const textEl  = document.getElementById('countdown-text');
         overlay.classList.remove('hidden');
+        unlockAudio(); // best-effort — needs a prior user gesture to actually play
 
         const steps = [['3', 'num', 1000], ['2', 'num', 1000], ['1', 'num', 1000]];
         let i = 0;
@@ -97,6 +115,7 @@
             textEl.className = '';
             void textEl.offsetWidth;
             textEl.className = cls;
+            playSfx('countTick');
             setTimeout(nextStep, dur);
           } else {
             // Show START and begin the game simultaneously
@@ -104,6 +123,7 @@
             textEl.className = '';
             void textEl.offsetWidth;
             textEl.className = 'start';
+            playSfx('countGo');
             startCb();
             setTimeout(() => {
               overlay.classList.add('hidden');
@@ -126,6 +146,12 @@
     const opArrowEl  = document.getElementById('op-arrow');
     const opLabelEl  = document.getElementById('op-label');
     const levelValEl = document.getElementById('level-val');
+    const itemEls    = {
+      freeze: document.getElementById('item-freeze'),
+      double: document.getElementById('item-double'),
+      shield: document.getElementById('item-shield'),
+    };
+    const freezeBadgeEl = document.getElementById('item-freeze-badge');
 
     // ── State ──
     let panels = []; // parallel to controller._quizList
@@ -144,6 +170,11 @@
       row.className = 'quiz-row';
       row.dataset.answer = line.Answer;
 
+      // Live QuizBoard behind the blocks; starts on its `inactive` clip.
+      const board = createBoard();
+      row._board = board;
+      row.appendChild(board);
+
       const left = document.createElement('div');
       left.className = 'side left';
       for (let i = 0; i < line.LeftBlock.length; i++) {
@@ -156,11 +187,10 @@
         left.appendChild(createBlockEl(line.LeftBlock[i]));
       }
 
+      // Transparent centre element — the "=" is baked into the board art; this
+      // stays only as the equal-answer tap target (swipeInput checks `.divider`).
       const div = document.createElement('div');
       div.className = 'divider';
-      const eq = document.createElement('span');
-      eq.textContent = '=';
-      div.appendChild(eq);
 
       const right = document.createElement('div');
       right.className = 'side right';
@@ -236,8 +266,19 @@
     function activateTop() {
       if (panels.length === 0) return;
       panels[0].classList.add('active');
-      panels[0].querySelectorAll('canvas').forEach(c => playAnim(c, 'active', true));
+      panels[0].querySelectorAll('.block canvas').forEach(c => playActive(c));
       updateOpIndicator();
+      refreshBoardStates();
+    }
+
+    // Board state: the current row (first row of the active panel) plays `active`;
+    // every other row's board stays `inactive`.
+    function refreshBoardStates() {
+      document.querySelectorAll('.quiz-row').forEach(r => {
+        if (r._board) playBoardAnim(r._board, 'inactive');
+      });
+      const cur = panels[0]?.querySelector('.quiz-row');
+      if (cur?._board) playBoardAnim(cur._board, 'active');
     }
 
     function onCorrect(side, done) {
@@ -255,12 +296,15 @@
       if (side === 1) { animateBlocksFade(leftEl);  animateBlocksCorrect(rightEl); }
       if (side === 2) { animateBlocksCorrect(leftEl);  animateBlocksCorrect(rightEl); }
 
+      // Board: halves slide apart (left/right) or equal-flash + slide (middle)
+      if (row._board) playBoardAnim(row._board, side === 2 ? 'equal_correct' : 'correct');
+
       // Remove the answered row after block animations settle (~0.3s)
       setTimeout(() => {
         destroyAll(row);
         row.remove();
 
-        if (!done) updateOpIndicator();
+        if (!done) { updateOpIndicator(); refreshBoardStates(); }
         if (done) {
           panels.shift();
           const h = panel.offsetHeight;
@@ -291,6 +335,53 @@
 
       if (side === 0 || side === 2) animateBlocksIncorrect(row.querySelector('.side.left'));
       if (side === 1 || side === 2) animateBlocksIncorrect(row.querySelector('.side.right'));
+
+      // Board flashes the side that WAS the correct answer, then returns to active.
+      if (row._board) {
+        const ans  = parseInt(row.dataset.answer, 10);
+        const clip = ans === 0 ? 'left_incorrect' : ans === 1 ? 'right_incorrect' : 'equal_incorrect';
+        playBoardAnim(row._board, clip, { then: 'active' });
+      }
+    }
+
+    function updateItemUI(id, state) {
+      const el = itemEls[id];
+      if (!el) return;
+
+      if (id === 'freeze') {
+        if (state.active) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+          // Charge spent → mark used and disable further taps.
+          if (state.charges <= 0) {
+            el.classList.add('used');
+            el.disabled = true;
+          }
+        }
+        if (freezeBadgeEl) freezeBadgeEl.textContent = `×${state.charges}`;
+        return;
+      }
+
+      // Double / Shield are passive — active by default, greyed when consumed.
+      if (state.active) {
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+        el.classList.add('used');
+        if (id === 'shield') playSfx('itemShield');
+      }
+    }
+
+    function resetItemsUI() {
+      itemEls.freeze.classList.remove('used');
+      itemEls.freeze.classList.remove('active');
+      itemEls.freeze.disabled = false;
+      if (freezeBadgeEl) freezeBadgeEl.textContent = '×1';
+      itemEls.double.classList.remove('used');
+      itemEls.double.classList.add('active');
+      itemEls.shield.classList.remove('used');
+      itemEls.shield.classList.add('active');
     }
 
     function onGameEnd(result) {
@@ -331,6 +422,7 @@
       controller.onIncorrect  = side => onIncorrect(side);
       controller.onGameEnd    = result => onGameEnd({ ...result, seed });
       controller.onLevelUpdate = v => { levelValEl.textContent = `Level ${v}`; };
+      controller.onItemUpdate  = (id, state) => updateItemUI(id, state);
 
       // Wire input
       const swipe = new SwipeInput(swipeArea);
@@ -338,6 +430,15 @@
       swipeArea.addEventListener('righttap', () => { unlockAudio(); playSfx('tap'); controller.answerRight(); });
       swipeArea.addEventListener('midtap',   () => { unlockAudio(); playSfx('tap'); controller.answerMid(); });
       swipeArea.addEventListener('swipe',    () => { unlockAudio(); playSfx('tap'); controller.answerSwipe(); });
+
+      // Freeze item — stop the tap from reaching the swipe capture layer.
+      itemEls.freeze.addEventListener('pointerdown', e => {
+        e.stopPropagation();
+        e.preventDefault();
+        unlockAudio();
+        playSfx('itemFreeze');
+        controller.useFreeze();
+      });
 
       document.addEventListener('keydown', e => {
         if (e.repeat) return;
@@ -347,6 +448,8 @@
             e.key === 'w'          || e.key === 'W' ||
             e.key === 's'          || e.key === 'S')                  { unlockAudio(); playSfx('tap'); controller.answerMid();   }
       });
+
+      resetItemsUI();
 
       // Handle duel launch from sessionStorage
       const duelRaw = sessionStorage.getItem('pendingDuelChallenge');

@@ -248,31 +248,26 @@ html, body {
   pointer-events: none;
 }
 
-/* Quiz row (one Line) */
+/* Quiz row (one Line) — live QuizBoard canvas fills the row; blocks sit on top.
+   active/inactive/correct/incorrect feedback is driven by the board's Spine clips. */
 .quiz-row {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 6px 8px;
+  /* Board art is 1028 x 252 spine units */
+  aspect-ratio: 1028 / 252;
   gap: 0;
 }
 
 .side {
+  position: relative; /* above the board canvas */
+  z-index: 1;
   display: flex;
   flex: 1;
   justify-content: center;
   align-items: center;
   gap: 4px;
   flex-wrap: nowrap;
-  background: rgba(8, 4, 22, 0.72);
-  border-radius: 10px;
-  border: 1.5px solid rgba(110, 60, 175, 0.5);
-  padding: 6px 8px;
-  min-height: 62px;
-  transition: border-color 0.25s ease;
-}
-
-.quiz-panel.active .side {
-  border-color: rgba(160, 90, 225, 0.9);
 }
 
 .block-op {
@@ -284,38 +279,13 @@ html, body {
   line-height: 1;
 }
 
+/* Centre "=" is part of the board art; this is just the equal-answer tap target,
+   sized/placed over the Btn_Equal region (158/1028 ≈ 15.4% of the row width). */
 .divider {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  background: rgba(120, 65, 190, 0.85);
-}
-
-.divider::after {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
-  background: rgba(22, 8, 48, 0.95);
-}
-
-.divider > span {
-  position: relative;
+  position: relative; /* above the board canvas */
   z-index: 1;
-  font-size: 16px;
-  font-weight: 900;
-  color: rgba(255,255,255,0.92);
+  flex: 0 0 15.4%;
+  align-self: stretch;
 }
 
 /* Block */
@@ -329,7 +299,7 @@ html, body {
   transition: transform 0.1s ease;
 }
 
-.t-1, .t-2, .t-3, .t-4, .t-5, .t-6, .t-7 { background: transparent; }
+.t-1, .t-2, .t-3, .t-4, .t-5, .t-6, .t-7, .t-8, .t-9 { background: transparent; }
 
 @keyframes block-correct {
   0%   { transform: scale(1);   opacity: 1; }
@@ -351,10 +321,75 @@ html, body {
 #swipe-area {
   position: absolute;
   inset: 0;
-  top: 90px; /* below HUD */
+  top: 90px;     /* below HUD */
+  bottom: 84px;  /* above the items bar so item taps aren't read as answers */
   cursor: pointer;
   touch-action: none;
   outline: none;
+}
+
+/* ════════════════════════════
+   ITEMS BAR
+   ════════════════════════════ */
+#items-bar {
+  flex: 0 0 auto;
+  height: 84px;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 12px 12px;
+  position: relative;
+  z-index: 2; /* above the #swipe-area capture layer */
+}
+
+.item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.5);
+  font-family: inherit;
+  cursor: default;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+#item-freeze { cursor: pointer; }
+
+.item-icon { font-size: 22px; line-height: 1; }
+.item-name {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+.item-badge {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.55);
+}
+
+/* Active — neon glow, per-item accent */
+.item.active {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+#item-freeze.active { border-color: #4ab8ff; box-shadow: 0 0 16px rgba(74,184,255,0.55); }
+#item-double.active { border-color: #f5a623; box-shadow: 0 0 16px rgba(245,166,35,0.55); }
+#item-shield.active { border-color: #7b61ff; box-shadow: 0 0 16px rgba(123,97,255,0.55); }
+
+/* Used — dimmed and inert */
+.item.used {
+  opacity: 0.32;
+  box-shadow: none;
+  border-color: rgba(255,255,255,0.1);
 }
 
 /* ════════════════════════════

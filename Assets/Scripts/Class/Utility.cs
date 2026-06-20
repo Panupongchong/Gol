@@ -12,6 +12,8 @@ public class Utility
 		Fiv = 5,
 		Rom = 6,
 		Clk = 7,
+		NumTH = 8,
+		WrdTH = 9,
 	}
 
 	public enum SecondaryType{

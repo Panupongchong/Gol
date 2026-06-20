@@ -1,0 +1,20 @@
+
+HiLoRush_Gameplay.png
+size: 1024, 256
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+Btn_Equal
+  rotate: false
+  xy: 504, 119
+  size: 156, 133
+  orig: 158, 135
+  offset: 1, 1
+  index: -1
+QuizBoard
+  rotate: false
+  xy: 2, 2
+  size: 500, 250
+  orig: 502, 252
+  offset: 1, 1
+  index: -1

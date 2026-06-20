@@ -10,6 +10,8 @@ const PRIMARY_ORDER = [
   ['fiv', PrimaryType.Fiv],
   ['rom', PrimaryType.Rom],
   ['clk', PrimaryType.Clk],
+  ['numth', PrimaryType.NumTH],
+  ['wrdth', PrimaryType.WrdTH],
 ];
 
 const TERTIARY_ORDER = [

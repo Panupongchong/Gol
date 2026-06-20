@@ -1,8 +1,9 @@
 import { Mini1QuizFactory } from './quizFactory.js';
 
-const TIME_LIMIT   = 5;   // seconds per quiz (matches EndlessGameplayController._timeLimit)
-const MAX_QUIZ     = 4;   // matches BaseGameplayController._maxQuiz
-const ANSWER_DELAY = 0.3; // seconds of input lockout after each answer
+const TIME_LIMIT     = 5;   // seconds per quiz (matches EndlessGameplayController._timeLimit)
+const MAX_QUIZ       = 4;   // matches BaseGameplayController._maxQuiz
+const ANSWER_DELAY   = 0.3; // seconds of input lockout after each answer
+const FREEZE_DURATION = 10; // seconds the Freeze Time item pauses the timer
 
 export class GameController {
   constructor(lvData, rng = () => Math.random()) {
@@ -24,6 +25,7 @@ export class GameController {
     this.onIncorrect   = null; // (side: 0|1|2) => void
     this.onGameEnd     = null; // (result: object) => void
     this.onLevelUpdate = null; // (lv: number) => void
+    this.onItemUpdate  = null; // (id: 'freeze'|'double'|'shield', state: {active, charges?}) => void
   }
 
   startGame() {
@@ -40,6 +42,14 @@ export class GameController {
     this._playing    = true;
     this._locked     = false;
     this._lastTime   = performance.now();
+
+    // Items — 3 free per run, one of each. Double + Shield are active from the
+    // start; Freeze has a single charge the player triggers via useFreeze().
+    this._doubleActive   = true;
+    this._shieldActive   = true;
+    this._freezeCharges  = 1;
+    this._frozen         = false;
+    this._freezeRemaining = 0;
 
     this._generatePlay();
     this._loop();
@@ -58,6 +68,15 @@ export class GameController {
   answerSwipe() { this._answer(2); } // swipe     → claim equal/balanced
   answerMid()   { this._answer(2); } // mid tap   → claim equal/balanced
 
+  // Freeze Time item — pauses the timer drain for FREEZE_DURATION seconds.
+  useFreeze() {
+    if (!this._playing || this._freezeCharges <= 0 || this._frozen) return;
+    this._freezeCharges--;
+    this._frozen          = true;
+    this._freezeRemaining = FREEZE_DURATION;
+    this.onItemUpdate?.('freeze', { active: true, charges: this._freezeCharges });
+  }
+
   // --- Private ---
 
   _loop() {
@@ -66,7 +85,16 @@ export class GameController {
     const dt  = (now - this._lastTime) / 1000;
     this._lastTime = now;
 
-    this._timeLeft -= dt;
+    if (this._frozen) {
+      // Freeze Time active — timer drain is paused until the charge expires.
+      this._freezeRemaining -= dt;
+      if (this._freezeRemaining <= 0) {
+        this._frozen = false;
+        this.onItemUpdate?.('freeze', { active: false, charges: this._freezeCharges });
+      }
+    } else {
+      this._timeLeft -= dt;
+    }
     this.onTimeFill?.(Math.max(0, this._timeLeft) / TIME_LIMIT);
 
     if (this._timeLeft <= 0) {
@@ -89,15 +117,16 @@ export class GameController {
 
   _onCorrect(side) {
     const done = this._quizList[0].next();
+    const mult = this._doubleActive ? 2 : 1; // Double Score item
 
     this._hit++;
-    this._score++;
+    this._score += mult;
     this._countCombo++;
 
     if (done) {
       this._quizList.shift();
       this._timeLeft = TIME_LIMIT; // reset timer on quiz completion
-      this._score++;               // bonus point for completing the quiz
+      this._score += mult;         // bonus point for completing the quiz
     }
 
     this.onCorrect?.(side, done);
@@ -113,13 +142,26 @@ export class GameController {
   }
 
   _onIncorrect(side) {
-    this._life--;
     this._miss++;
     if (this._countCombo > this._combo) this._combo = this._countCombo;
     this._countCombo = 0;
 
+    // Double Score ends on any wrong answer.
+    if (this._doubleActive) {
+      this._doubleActive = false;
+      this.onItemUpdate?.('double', { active: false });
+    }
+
     this.onIncorrect?.(side);
 
+    // Shield absorbs the hit before life is touched.
+    if (this._shieldActive) {
+      this._shieldActive = false;
+      this.onItemUpdate?.('shield', { active: false });
+      return;
+    }
+
+    this._life--;
     if (this._life <= 0) this._endGame();
   }
 

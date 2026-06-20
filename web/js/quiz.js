@@ -1,5 +1,5 @@
 export const PrimaryType = {
-  Num: 1, Inv: 2, Wrd: 3, Dic: 4, Fiv: 5, Rom: 6, Clk: 7
+  Num: 1, Inv: 2, Wrd: 3, Dic: 4, Fiv: 5, Rom: 6, Clk: 7, NumTH: 8, WrdTH: 9
 };
 
 export class Block {

@@ -38,13 +38,15 @@ public class BlockObjectController : BaseBlockObject
 		_graphic.skeletonDataAsset = _numbersAsset[number];
 		string skinKey = primaryType switch
 		{
-			Utility.PrimaryType.Num => "Number", //"NumberTH"
+			Utility.PrimaryType.Num => "Number",
 			Utility.PrimaryType.Inv => "Negative",
-			Utility.PrimaryType.Wrd => "Word", //"WordTH"
+			Utility.PrimaryType.Wrd => "Word",
 			Utility.PrimaryType.Dic => "Dice",
 			Utility.PrimaryType.Fiv => "FiveBar",
 			Utility.PrimaryType.Rom => "Roman",
 			Utility.PrimaryType.Clk => "Clock",
+			Utility.PrimaryType.NumTH => "NumberTH",
+			Utility.PrimaryType.WrdTH => "WordTH",
 			_ => throw new NotImplementedException()
 		};
 		_graphic.Skeleton.SetSkin(skinKey);
