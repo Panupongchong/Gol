@@ -16,6 +16,21 @@ const SFX_FILES = {
   countGo:    'sfx/DM-CGS-40.wav',  // countdown START
 };
 
+// ── Mute state — persisted across pages/sessions in localStorage ──────
+const MUTE_KEY = 'gol-muted';
+let _muted = false;
+try { _muted = localStorage.getItem(MUTE_KEY) === '1'; } catch {}
+
+export function isMuted() { return _muted; }
+
+export function setMuted(m) {
+  _muted = !!m;
+  try { localStorage.setItem(MUTE_KEY, _muted ? '1' : '0'); } catch {}
+}
+
+// Flip the mute flag and return the new state.
+export function toggleMute() { setMuted(!_muted); return _muted; }
+
 export async function loadSfx() {
   await Promise.all(
     Object.entries(SFX_FILES).map(async ([name, path]) => {
@@ -35,6 +50,7 @@ export function unlockAudio() {
 }
 
 export function play(name, volume = 1) {
+  if (_muted) return;
   const buf = _buf.get(name);
   if (!buf) return;
   if (_ctx.state === 'suspended') _ctx.resume();

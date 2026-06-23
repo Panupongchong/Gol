@@ -32,6 +32,17 @@
       </div>
     </div>
 
+    <!-- Rank-mode leaderboard (shown only after a Rank run) -->
+    <div id="rank-board" style="display:none">
+      <div class="rank-title">RANK LEADERBOARD</div>
+      <div id="rank-name-row">
+        <input id="rank-name" maxlength="12" placeholder="YOUR NAME" autocomplete="off" spellcheck="false">
+        <button class="menu-btn btn-primary" id="rank-submit">SUBMIT</button>
+      </div>
+      <div id="rank-status"></div>
+      <ol id="rank-list"></ol>
+    </div>
+
     <div class="result-actions">
       <button class="menu-btn btn-primary"   id="btn-share">SHARE</button>
       <button class="menu-btn btn-secondary" id="btn-back">BACK</button>
@@ -72,6 +83,7 @@
 
   <script type="module">
     import { encryptPayload, decryptPayload } from './js/duelCrypto.js';
+    import { submitScore, fetchTop } from './js/leaderboard.js';
 
     // Set to your Facebook Instant Game App ID when ready.
     // Messenger share will use https://fb.gg/play/<ID>?d=... once configured.
@@ -93,6 +105,7 @@
       const score   = result.score ?? 0;
       const combo   = result.combo ?? 0;
       const bonus   = result.bonus ?? 0;
+      const isRank  = result.isRank === true;
       const newBest = Math.max(best, score);
       localStorage.setItem('bestScore', newBest);
 
@@ -106,18 +119,30 @@
         window.location.href = 'index.html';
       });
 
-      // Share button: encrypt result then open modal
+      // Share button: open modal.
+      // Rank mode → share the score plus a plain link to play the game.
+      // Otherwise → embed an encrypted challenge (seed) so others replay it.
       document.getElementById('btn-share').addEventListener('click', async () => {
-        const payload = { score, combo, bonus, t: Math.floor(Date.now() / 1000), seed: result.seed };
-        const encoded = await encryptPayload(payload);
+        const dir = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
 
-        const dir    = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
-        const webUrl = `${dir}result.html?d=${encoded}`;
-        const igUrl  = INSTANT_GAME_ID
-          ? `https://fb.gg/play/${INSTANT_GAME_ID}?d=${encoded}`
-          : webUrl;
+        let webUrl, igUrl;
+        if (isRank) {
+          // Plain link to the game's landing page — no seed, fresh game for them.
+          webUrl = `${dir}index.html`;
+          igUrl  = INSTANT_GAME_ID
+            ? `https://fb.gg/play/${INSTANT_GAME_ID}`
+            : webUrl;
+        } else {
+          const payload = { score, combo, bonus, t: Math.floor(Date.now() / 1000), seed: result.seed };
+          const encoded = await encryptPayload(payload);
+          webUrl = `${dir}result.html?d=${encoded}`;
+          igUrl  = INSTANT_GAME_ID
+            ? `https://fb.gg/play/${INSTANT_GAME_ID}?d=${encoded}`
+            : webUrl;
+        }
 
-        document.getElementById('share-preview').textContent = `I scored ${score} in GOL!`;
+        document.getElementById('share-preview').textContent =
+          `I scored ${score} in NUMBER PARTY! Can you beat it?`;
         document.getElementById('btn-messenger').dataset.url   = igUrl;
         document.getElementById('btn-share-other').dataset.url = webUrl;
         document.getElementById('btn-copy').dataset.url        = webUrl;
@@ -126,6 +151,77 @@
       });
 
       setupShareModal();
+
+      if (isRank) setupRankBoard(score);
+    }
+
+    // ── Rank leaderboard (Rank mode only) ────────────────────────────
+    async function setupRankBoard(score) {
+      document.getElementById('rank-board').style.display = '';
+
+      const nameInput = document.getElementById('rank-name');
+      const submitBtn = document.getElementById('rank-submit');
+      const statusEl  = document.getElementById('rank-status');
+      const listEl    = document.getElementById('rank-list');
+      const nameRow   = document.getElementById('rank-name-row');
+
+      nameInput.value = (localStorage.getItem('playerName') || '').toUpperCase();
+
+      let myId = null;
+      async function render() {
+        listEl.innerHTML = '<li class="rank-msg">Loading…</li>';
+        try {
+          renderList(listEl, await fetchTop(20), myId);
+        } catch {
+          listEl.innerHTML = '<li class="rank-msg">Leaderboard unavailable</li>';
+        }
+      }
+
+      await render();
+
+      const sid = sessionStorage.getItem('rankSid');
+      if (!sid) {
+        // No valid session (offline at game start, or rules not yet published).
+        nameRow.style.display = 'none';
+        statusEl.textContent = 'Score not eligible for ranking this run';
+        return;
+      }
+
+      submitBtn.addEventListener('click', async () => {
+        const name = nameInput.value.trim();
+        if (!name) { nameInput.focus(); return; }
+        localStorage.setItem('playerName', name);
+        submitBtn.disabled = true;
+        statusEl.textContent = 'Submitting…';
+        try {
+          const entry = await submitScore(name, score, sid);
+          myId = entry.id;
+          sessionStorage.removeItem('rankSid'); // one submission per run
+          statusEl.textContent = `Submitted — ${entry.score} pts`;
+          nameRow.style.display = 'none';
+          await render();
+        } catch {
+          statusEl.textContent = 'Submit failed — try again';
+          submitBtn.disabled = false;
+        }
+      });
+    }
+
+    function renderList(listEl, entries, myId) {
+      listEl.innerHTML = '';
+      if (!entries.length) {
+        listEl.innerHTML = '<li class="rank-msg">No scores yet — be the first!</li>';
+        return;
+      }
+      entries.forEach((e, i) => {
+        const li  = document.createElement('li');
+        li.className = 'rank-row' + (e.id === myId ? ' me' : '');
+        const pos = document.createElement('span'); pos.className = 'rank-pos';   pos.textContent = i + 1;
+        const nm  = document.createElement('span'); nm.className  = 'rank-name-cell'; nm.textContent = e.name || 'ANON';
+        const sc  = document.createElement('span'); sc.className  = 'rank-score'; sc.textContent = e.score;
+        li.append(pos, nm, sc);
+        listEl.appendChild(li);
+      });
     }
 
     // ── Challenge view (opened from share link) ──────────────────────

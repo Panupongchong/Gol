@@ -16,6 +16,10 @@ export class GameController {
     this.isDuel        = false;
     this.duelChallenge = null;
 
+    // Rank mode — no items (Double/Shield/Freeze disabled). Set via startRankGame().
+    this.isRank        = false;
+    this.itemsEnabled  = true;
+
     // View callbacks — assign before startGame()
     this.onScoreUpdate = null; // (score: number) => void
     this.onComboUpdate = null; // (combo: number) => void
@@ -45,9 +49,10 @@ export class GameController {
 
     // Items — 3 free per run, one of each. Double + Shield are active from the
     // start; Freeze has a single charge the player triggers via useFreeze().
-    this._doubleActive   = true;
-    this._shieldActive   = true;
-    this._freezeCharges  = 1;
+    // In Rank mode (itemsEnabled = false) the player gets none of them.
+    this._doubleActive   = this.itemsEnabled;
+    this._shieldActive   = this.itemsEnabled;
+    this._freezeCharges  = this.itemsEnabled ? 1 : 0;
     this._frozen         = false;
     this._freezeRemaining = 0;
 
@@ -58,6 +63,13 @@ export class GameController {
   startDuelGame(challenge) {
     this.isDuel        = true;
     this.duelChallenge = challenge;
+    this.startGame();
+  }
+
+  // Rank mode — competitive run with no items.
+  startRankGame() {
+    this.isRank       = true;
+    this.itemsEnabled = false;
     this.startGame();
   }
 
@@ -174,11 +186,14 @@ export class GameController {
       combo:         this._combo,
       bonus:         this._bonus,
       isDuel:        this.isDuel,
+      isRank:        this.isRank,
       duelChallenge: this.duelChallenge,
     };
 
     this.isDuel        = false;
     this.duelChallenge = null;
+    this.isRank        = false;
+    this.itemsEnabled  = true;
 
     this.onGameEnd?.(result);
   }

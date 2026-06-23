@@ -6,7 +6,7 @@ filter: Linear, Linear
 repeat: none
 Btn_Equal
   rotate: false
-  xy: 504, 119
+  xy: 506, 121
   size: 156, 133
   orig: 158, 135
   offset: 1, 1
@@ -14,7 +14,7 @@ Btn_Equal
 QuizBoard
   rotate: false
   xy: 2, 2
-  size: 500, 250
+  size: 502, 252
   orig: 502, 252
-  offset: 1, 1
+  offset: 0, 0
   index: -1

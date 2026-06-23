@@ -65,7 +65,14 @@
       "Bash(echo \"exit:$?\")",
       "Bash(pkill -f \"http.server 8765\")",
       "Bash(cd /c/Users/Dell/Documents/Work/Gol && find . -iname \"*Mini1QuizFactory*\" -o -iname \"*QuizFactory*.cs\" 2>/dev/null | head)",
-      "Read(//c/c/Users/Dell/Documents/Work/**)"
+      "Read(//c/c/Users/Dell/Documents/Work/**)",
+      "Bash(git commit -m '@ *)",
+      "Bash(git commit *)",
+      "Bash(zip -q ../export/numberparty_itch.zip -@)",
+      "Bash(unzip -l ../export/numberparty_itch.zip)",
+      "Bash(rtk ls *)",
+      "Bash(command -v node)",
+      "Bash(npm ls *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Dell\\Documents\\Work\\Gol\\Assets\\CasualGameSounds",

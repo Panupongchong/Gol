@@ -23,20 +23,23 @@
     <!-- HUD -->
     <div id="hud">
       <div id="hud-stats">
-        <div id="score-display">
-          <span class="stat-label">SCORE</span>
-          <span class="stat-value" id="score">0</span>
-        </div>
-        <div id="hud-center">
-          <span id="level-val">Level 1</span>
-          <div id="op-indicator">
-            <span id="op-arrow">▼</span>
-            <span id="op-label">—</span>
+        <div id="score-display" class="hud-card">
+          <span class="card-icon">🏆</span>
+          <div class="card-text">
+            <span class="stat-label">SCORE</span>
+            <span class="stat-value" id="score">0</span>
           </div>
         </div>
         <div id="combo-display">
           <span class="stat-label">COMBO</span>
           <span class="stat-value" id="combo">0</span>
+        </div>
+        <div id="level-display" class="hud-card">
+          <div class="card-text">
+            <span class="stat-label">LEVEL</span>
+            <span class="stat-value" id="level-val">1</span>
+          </div>
+          <span class="card-icon">★</span>
         </div>
       </div>
       <div id="time-bar-track"><div id="time-fill"></div></div>
@@ -44,6 +47,18 @@
 
     <!-- Panels -->
     <div id="quiz-area"></div>
+
+    <!-- High / Low direction banner -->
+    <div id="op-banner">
+      <span class="speed-lines left"><i></i><i></i><i></i></span>
+      <span id="op-indicator">
+        <span id="hl-high">HIGH</span>
+        <span id="op-arrow">▼</span>
+        <span id="hl-low">LOW</span>
+      </span>
+      <span class="speed-lines right"><i></i><i></i><i></i></span>
+      <span id="op-label" class="sr-only">—</span>
+    </div>
 
     <!-- Invisible swipe/tap capture layer -->
     <div id="swipe-area" tabindex="0"></div>
@@ -60,18 +75,22 @@
 
     <!-- Items bar (gameplay only) -->
     <div id="items-bar">
-      <button class="item" id="item-freeze" data-item="freeze" type="button">
-        <span class="item-icon">❄</span>
-        <span class="item-name">FREEZE</span>
-        <span class="item-badge" id="item-freeze-badge">×1</span>
-      </button>
-      <div class="item" id="item-double" data-item="double">
-        <span class="item-icon">×2</span>
-        <span class="item-name">DOUBLE</span>
-      </div>
-      <div class="item" id="item-shield" data-item="shield">
-        <span class="item-icon">🛡</span>
-        <span class="item-name">SHIELD</span>
+      <span class="items-header">ITEMS</span>
+      <div class="items-row">
+        <button class="item" id="item-freeze" data-item="freeze" type="button">
+          <span class="item-icon">❄</span>
+          <span class="item-name">FREEZE</span>
+          <span class="item-badge" id="item-freeze-badge">×1</span>
+        </button>
+        <div class="item" id="item-double" data-item="double">
+          <span class="item-icon">×2</span>
+          <span class="item-name">DOUBLE</span>
+        </div>
+        <div class="item item-empty" aria-hidden="true"></div>
+        <div class="item" id="item-shield" data-item="shield">
+          <span class="item-icon">+1</span>
+          <span class="item-name">SHIELD</span>
+        </div>
       </div>
     </div>
 
@@ -82,6 +101,7 @@
     import { SwipeInput }      from './js/swipeInput.js';
     import { load as spineLoad, createBlock, createBoard, destroyAll, playAnim, playActive, playIncorrect, playBoardAnim } from './js/spineRenderer.js';
     import { loadSfx, play as playSfx, unlockAudio } from './js/sfx.js';
+    import { startSession } from './js/leaderboard.js';
 
     const SKIN_MAP = { 1:'Number', 2:'Negative', 3:'Word', 4:'Dice', 5:'FiveBar', 6:'Roman', 7:'Clock', 8:'NumberTH', 9:'WordTH' };
 
@@ -145,6 +165,8 @@
     const loadingEl   = document.getElementById('loading');
     const opArrowEl  = document.getElementById('op-arrow');
     const opLabelEl  = document.getElementById('op-label');
+    const hlHighEl   = document.getElementById('hl-high');
+    const hlLowEl    = document.getElementById('hl-low');
     const levelValEl = document.getElementById('level-val');
     const itemEls    = {
       freeze: document.getElementById('item-freeze'),
@@ -167,7 +189,8 @@
 
     function createRowEl(line) {
       const row = document.createElement('div');
-      row.className = 'quiz-row';
+      // Start dimmed/inactive; refreshBoardStates() clears it on the active row.
+      row.className = 'quiz-row inactive';
       row.dataset.answer = line.Answer;
 
       // Live QuizBoard behind the blocks; starts on its `inactive` clip.
@@ -224,7 +247,10 @@
       const answer = parseInt(firstRow.dataset.answer, 10);
       if (answer === 0)      { opArrowEl.textContent = '◀'; opLabelEl.textContent = 'LEFT';  }
       else if (answer === 1) { opArrowEl.textContent = '▶'; opLabelEl.textContent = 'RIGHT'; }
-      else                   { opArrowEl.textContent = '='; opLabelEl.textContent = 'EQUAL'; }
+      else                   { opArrowEl.textContent = '▲'; opLabelEl.textContent = 'EQUAL'; }
+      // Light the HIGH/LOW banner side that matches the required swipe.
+      hlHighEl.classList.toggle('lit', answer === 0 || answer === 2);
+      hlLowEl.classList.toggle('lit',  answer === 1 || answer === 2);
     }
 
     // ── Animation helpers ──
@@ -274,10 +300,11 @@
     // Board state: the current row (first row of the active panel) plays `active`;
     // every other row's board stays `inactive`.
     function refreshBoardStates() {
+      const cur = panels[0]?.querySelector('.quiz-row');
       document.querySelectorAll('.quiz-row').forEach(r => {
         if (r._board) playBoardAnim(r._board, 'inactive');
+        r.classList.toggle('inactive', r !== cur); // dims the blocks to match the board
       });
-      const cur = panels[0]?.querySelector('.quiz-row');
       if (cur?._board) playBoardAnim(cur._board, 'active');
     }
 
@@ -421,7 +448,7 @@
       controller.onCorrect    = (side, done) => onCorrect(side, done);
       controller.onIncorrect  = side => onIncorrect(side);
       controller.onGameEnd    = result => onGameEnd({ ...result, seed });
-      controller.onLevelUpdate = v => { levelValEl.textContent = `Level ${v}`; };
+      controller.onLevelUpdate = v => { levelValEl.textContent = v; };
       controller.onItemUpdate  = (id, state) => updateItemUI(id, state);
 
       // Wire input
@@ -451,12 +478,29 @@
 
       resetItemsUI();
 
+      // Selected mode (set by the menu). Rank mode runs with no items.
+      const mode = sessionStorage.getItem('mode') || 'normal';
+      const isRank = mode === 'rank';
+      if (isRank) {
+        document.getElementById('items-bar').style.display = 'none';
+      }
+
       // Handle duel launch from sessionStorage
       const duelRaw = sessionStorage.getItem('pendingDuelChallenge');
       if (duelRaw) {
         sessionStorage.removeItem('pendingDuelChallenge');
         const duelData = JSON.parse(duelRaw);
         await runCountdown(() => controller.startDuelGame(duelData));
+      } else if (isRank) {
+        // Open a server-timestamped session so the leaderboard rule can cap the
+        // score by real elapsed time. This runs in the BACKGROUND — a slow or
+        // hanging Firebase fetch must never block (or stall) the start of play.
+        // The sid is only needed at submit time, long after the run begins.
+        sessionStorage.removeItem('rankSid');
+        startSession()
+          .then(sid => sessionStorage.setItem('rankSid', sid))
+          .catch(() => {});
+        await runCountdown(() => controller.startRankGame());
       } else {
         await runCountdown(() => controller.startGame());
       }

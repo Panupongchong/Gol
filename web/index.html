@@ -10,16 +10,39 @@
 <body>
   <div id="menu-screen" class="screen">
 
-    <div id="menu-title">GOL</div>
+    <div id="menu-title">
+      NUMBER PARTY
+      <span id="menu-subtitle">HighLow Rush</span>
+    </div>
 
-    <button class="menu-btn btn-primary" id="btn-play">PLAY</button>
+    <button class="menu-btn btn-primary"   id="btn-play">NORMAL</button>
+    <button class="menu-btn btn-secondary" id="btn-rank">RANK</button>
+
+    <button id="sound-toggle" class="icon-btn" type="button" aria-label="Toggle sound">🔊</button>
 
   </div>
 
-  <script>
+  <script type="module">
+    import { isMuted, toggleMute } from './js/sfx.js';
+
     document.getElementById('btn-play').addEventListener('click', () => {
+      sessionStorage.setItem('mode', 'normal');
       window.location.href = 'game.html';
     });
+    document.getElementById('btn-rank').addEventListener('click', () => {
+      sessionStorage.setItem('mode', 'rank');
+      window.location.href = 'game.html';
+    });
+
+    // Sound on/off — persisted in localStorage by sfx.js, shared with the game.
+    const soundBtn = document.getElementById('sound-toggle');
+    const renderSound = () => {
+      const muted = isMuted();
+      soundBtn.textContent = muted ? '🔇' : '🔊';
+      soundBtn.classList.toggle('muted', muted);
+    };
+    renderSound();
+    soundBtn.addEventListener('click', () => { toggleMute(); renderSound(); });
   </script>
 </body>
 </html>
