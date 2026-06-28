@@ -4,6 +4,7 @@ const TIME_LIMIT     = 5;   // seconds per quiz (matches EndlessGameplayControll
 const MAX_QUIZ       = 4;   // matches BaseGameplayController._maxQuiz
 const ANSWER_DELAY   = 0.3; // seconds of input lockout after each answer
 const FREEZE_DURATION = 10; // seconds the Freeze Time item pauses the timer
+const DOUBLE_DURATION = 10; // seconds the Double Score item doubles points
 
 export class GameController {
   constructor(lvData, rng = () => Math.random()) {
@@ -47,14 +48,17 @@ export class GameController {
     this._locked     = false;
     this._lastTime   = performance.now();
 
-    // Items — 3 free per run, one of each. Double + Shield are active from the
-    // start; Freeze has a single charge the player triggers via useFreeze().
-    // In Rank mode (itemsEnabled = false) the player gets none of them.
-    this._doubleActive   = this.itemsEnabled;
+    // Items — 3 free per run, one of each. Shield is passive (active from the
+    // start). Freeze and Double each have a single charge the player triggers
+    // via useFreeze() / useDouble(). In Rank mode (itemsEnabled = false) the
+    // player gets none of them.
     this._shieldActive   = this.itemsEnabled;
     this._freezeCharges  = this.itemsEnabled ? 1 : 0;
     this._frozen         = false;
     this._freezeRemaining = 0;
+    this._doubleCharges   = this.itemsEnabled ? 1 : 0;
+    this._doubleActive    = false;
+    this._doubleRemaining = 0;
 
     this._generatePlay();
     this._loop();
@@ -89,6 +93,15 @@ export class GameController {
     this.onItemUpdate?.('freeze', { active: true, charges: this._freezeCharges });
   }
 
+  // Double Score item — doubles every point scored for DOUBLE_DURATION seconds.
+  useDouble() {
+    if (!this._playing || this._doubleCharges <= 0 || this._doubleActive) return;
+    this._doubleCharges--;
+    this._doubleActive    = true;
+    this._doubleRemaining = DOUBLE_DURATION;
+    this.onItemUpdate?.('double', { active: true, charges: this._doubleCharges });
+  }
+
   // --- Private ---
 
   _loop() {
@@ -96,6 +109,15 @@ export class GameController {
     const now = performance.now();
     const dt  = (now - this._lastTime) / 1000;
     this._lastTime = now;
+
+    // Double Score runs on real time, independent of the (freeze-pausable) quiz timer.
+    if (this._doubleActive) {
+      this._doubleRemaining -= dt;
+      if (this._doubleRemaining <= 0) {
+        this._doubleActive = false;
+        this.onItemUpdate?.('double', { active: false, charges: this._doubleCharges });
+      }
+    }
 
     if (this._frozen) {
       // Freeze Time active — timer drain is paused until the charge expires.
@@ -158,12 +180,6 @@ export class GameController {
     if (this._countCombo > this._combo) this._combo = this._countCombo;
     this._countCombo = 0;
 
-    // Double Score ends on any wrong answer.
-    if (this._doubleActive) {
-      this._doubleActive = false;
-      this.onItemUpdate?.('double', { active: false });
-    }
-
     this.onIncorrect?.(side);
 
     // Shield absorbs the hit before life is touched.
@@ -184,6 +200,7 @@ export class GameController {
     const result = {
       score:         this._score,
       combo:         this._combo,
+      level:         this._lv,
       bonus:         this._bonus,
       isDuel:        this.isDuel,
       isRank:        this.isRank,

@@ -5,9 +5,32 @@ html, body {
   height: 100dvh;
   background: #1a1a2e;
   color: #fff;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Arial', 'Leelawadee UI', 'Tahoma', sans-serif;
   overflow: hidden;
   user-select: none;
+}
+
+/* ── Splash screen ── */
+#splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2e;
+  transition: opacity 0.4s ease;
+}
+#splash.hide { opacity: 0; pointer-events: none; }
+#splash img {
+  width: 70%;
+  max-width: 360px;
+  height: auto;
+  animation: splash-in 0.5s ease both;
+}
+@keyframes splash-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 /* ── Shared screen wrapper ── */
@@ -138,42 +161,37 @@ html, body {
   margin-bottom: 10px;
 }
 
-/* Score / Level cards — rounded, accent-bordered, soft neon glow */
-.hud-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+/* Score / Level boards — artwork (label + icon) baked into the PNG; only the
+   numeric value is overlaid. Aspect ratio matches the source images (320x164). */
+#score-display, #level-display {
   flex: 1 1 0;
   min-width: 0;
-  padding: 8px 14px;
-  border-radius: 16px;
-  background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
-  border: 2px solid transparent;
-}
-
-#score-display.hud-card {
-  border-color: rgba(74,184,255,0.65);
-  box-shadow: 0 0 14px rgba(74,184,255,0.25), inset 0 0 12px rgba(74,184,255,0.12);
-}
-#level-display.hud-card {
-  justify-content: flex-end;
-  border-color: rgba(233,69,150,0.7);
-  box-shadow: 0 0 14px rgba(233,69,150,0.28), inset 0 0 12px rgba(233,69,150,0.12);
-}
-
-.card-text {
+  position: relative;
+  aspect-ratio: 320 / 164;
+  background: center / 100% 100% no-repeat;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+  align-items: center;
 }
-#level-display .card-text { align-items: flex-end; }
+#score-display { background-image: url('../img/Score_Board.png'); }
+#level-display { background-image: url('../img/Level_Board.png'); }
 
-.card-icon { font-size: 30px; line-height: 1; flex: 0 0 auto; }
-#score-display .card-icon { color: #ffc83d; text-shadow: 0 0 12px rgba(255,200,61,0.6); }
-#level-display .card-icon { color: #ff4d97; text-shadow: 0 0 12px rgba(255,77,151,0.7); }
+/* Value placement over each board (tuned to the baked layout). */
+#score-display .stat-value {
+  position: absolute;
+  left: 52%; right: 8%;
+  top: 50%;
+  text-align: center;
+  transform: translateY(-30%);
+}
+#level-display .stat-value {
+  position: absolute;
+  left: 8%; width: 44%;
+  top: 50%;
+  text-align: center;
+  transform: translateY(-30%);
+}
 
-/* Combo sits between the cards, label + value, no frame */
+/* Combo sits between the boards, label + value, no frame */
 #combo-display {
   display: flex;
   flex-direction: column;
@@ -190,34 +208,41 @@ html, body {
   letter-spacing: 1.5px;
 }
 
-#score-display .stat-label { color: #4ab8ff; }
-#level-display .stat-label { color: #ff4d97; }
 #combo-display .stat-label { color: #f5a623; }
 
 .stat-value {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 900;
   line-height: 1;
   color: #fff;
 }
 
+#score-display .stat-value { color: #fff; }
+#level-display .stat-value { color: #fff; }
 #combo { color: #f5a623; text-shadow: 0 0 14px rgba(245,166,35,0.5); }
 
-#time-bar-track {
+/* ── Time bar: layered art — dark track (Bot), rainbow fill (Gauge),
+   frame on top (Top). The fill scales horizontally with time remaining. ── */
+#time-bar {
+  position: relative;
   width: 100%;
-  height: 14px;
-  background: #06060f;
-  border-radius: 7px;
-  overflow: hidden;
-  box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+  aspect-ratio: 819 / 59;
+  background: url('../img/Timebar_Bot.png') center / 100% 100% no-repeat;
 }
-
+#time-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url('../img/Timebar_Top.png') center / 100% 100% no-repeat;
+  pointer-events: none;
+}
 #time-fill {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(90deg,
-    #ff2d2d 0%, #ff7b00 22%, #ffe600 45%, #9be000 68%, #1fdb5a 100%);
-  border-radius: 7px;
+  position: absolute;
+  left: 1.6%;
+  top: 22%;
+  width: 96.8%;
+  height: 56%;
+  background: url('../img/Timebar_Gauge.png') center / 100% 100% no-repeat;
   transform-origin: left center;
   transition: transform 0.1s linear;
 }
@@ -242,30 +267,10 @@ html, body {
   z-index: 1;
 }
 
-#op-indicator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-style: italic;
-  font-weight: 900;
-  font-size: 30px;
-  letter-spacing: 1px;
-}
-
-#hl-high, #hl-low {
-  transition: opacity 0.15s ease, text-shadow 0.15s ease;
-  opacity: 0.4;
-}
-#hl-high { color: #2f9bff; }
-#hl-low  { color: #b23047; }
-#hl-high.lit { opacity: 1; text-shadow: 0 0 16px rgba(47,155,255,0.7); }
-#hl-low.lit  { opacity: 1; color: #e94560; text-shadow: 0 0 16px rgba(233,69,96,0.7); }
-
-#op-arrow {
-  font-size: 20px;
-  line-height: 1;
-  color: #e94560;
-  text-shadow: 0 0 12px rgba(233,69,96,0.6);
+#op-img {
+  height: 46px;
+  width: auto;
+  display: block;
 }
 
 /* Three tapered speed lines flanking the HIGH/LOW text */
@@ -290,7 +295,7 @@ html, body {
 /* Quiz area — column-reverse so panels[0] (active) is at the bottom */
 #quiz-area {
   flex: 1 1 auto;
-  overflow: hidden;
+  min-height: 0;          /* allow the flex child to shrink so overflow can scroll */
   margin: 0 12px;
   padding: 10px;
   border: 2px solid rgba(123,97,255,0.35);
@@ -300,7 +305,14 @@ html, body {
   flex-direction: column-reverse;
   justify-content: flex-start;
   gap: 0;
+  /* When the queued panels are taller than the box, scroll instead of spilling
+     over the HUD. column-reverse keeps the active row pinned to the bottom and
+     scrolls the upcoming panels up out of view. Scrollbar hidden for a clean
+     game look. */
+  overflow-y: auto;
+  scrollbar-width: none;          /* Firefox */
 }
+#quiz-area::-webkit-scrollbar { display: none; }  /* WebKit/Blink */
 
 @keyframes panel-enter {
   from { opacity: 0; transform: translateY(6px); }
@@ -426,76 +438,69 @@ html, body {
 #items-bar {
   flex: 0 0 auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
-  padding: 4px 12px 12px;
+  justify-content: center;
+  gap: 12px;
+  padding: 4px 14px 12px;
   position: relative;
   z-index: 2; /* above the #swipe-area capture layer */
 }
 
 .items-header {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 3px;
   color: rgba(178,120,255,0.85);
   text-transform: uppercase;
+  flex: 0 0 auto;
 }
 
-.items-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-}
-
-/* Octagonal slot */
-.item {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Slot container artwork (Item_Slot_1.png) — the 3 octagon wells and the
+   Active/Passive labels are baked in; item icons are positioned over the wells. */
+.items-slot {
   position: relative;
-  clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%);
+  flex: 0 0 auto;
+  width: 300px;
+  aspect-ratio: 409 / 159;
+  background: center / 100% 100% no-repeat url('../img/Item_Slot_1.png');
+}
+
+/* Item icon overlaid on its baked octagon well. */
+.item {
+  position: absolute;
+  width: 23%;
+  aspect-ratio: 1;
+  top: 45%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #fff;
   font-family: inherit;
   border: none;
+  background: none;
   padding: 0;
   cursor: default;
   transition: opacity 0.2s ease, filter 0.2s ease;
 }
+/* Octagon well centres (as % of the slot artwork width). */
+#item-freeze { left: 18%; cursor: pointer; }
+#item-double { left: 46%; cursor: pointer; }
+#item-shield { left: 81%; }
 
-/* Per-item filled gradients (active look from the mockup) */
-#item-freeze { background: linear-gradient(160deg, #5fc0ff, #1565d8); filter: drop-shadow(0 0 8px rgba(74,184,255,0.6)); cursor: pointer; }
-#item-double { background: linear-gradient(160deg, #54d6ff, #1b9bd8); filter: drop-shadow(0 0 8px rgba(60,200,255,0.55)); }
-#item-shield { background: linear-gradient(160deg, #b48bff, #6a3fd8); filter: drop-shadow(0 0 8px rgba(155,107,255,0.6)); }
-
-/* Empty / locked slot */
-.item-empty {
-  background: rgba(255,255,255,0.05);
-  filter: none;
-  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08);
+/* Octagonal sprite with its own baked-in colour + glow */
+img.item-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 
-.item-icon {
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
-}
 /* Labels are hidden in-game; kept in DOM for clarity/a11y */
 .item-name { display: none; }
-
-.item-badge {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  font-size: 11px;
-  font-weight: 900;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
 
 /* Active — full strength glow (default for filled items) */
 .item.active { opacity: 1; }
@@ -507,6 +512,13 @@ html, body {
 }
 #item-freeze.active { animation: freeze-pulse 0.8s ease-in-out infinite; }
 
+/* Double Score currently in effect — brighter pulsing gold glow */
+@keyframes double-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(255,200,74,0.7)); }
+  50%      { filter: drop-shadow(0 0 18px rgba(255,225,120,1)); }
+}
+#item-double.active { animation: double-pulse 0.8s ease-in-out infinite; }
+
 /* Used — drained and inert */
 .item.used {
   opacity: 0.3;
@@ -517,32 +529,67 @@ html, body {
    MAIN MENU SCREEN
    ════════════════════════════ */
 #menu-screen {
-  background: #16213e;
-  justify-content: center;
+  background: #0a1330;
+  justify-content: flex-start;
   align-items: center;
-  gap: 32px;
+  padding: 24px 22px 28px;
+  gap: 0;
 }
 
-#menu-title {
+/* Logo lock-up (NUMBER PARTY artwork + Thai subtitle). */
+#menu-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  font-size: 64px;
-  font-weight: 900;
-  color: #e94560;
-  letter-spacing: 4px;
-  text-shadow: 0 0 30px rgba(233,69,96,0.6);
-  line-height: 1.05;
+  margin: 14px 0 18px;
+}
+.menu-logo-main {
+  width: 68%;
+  max-width: 270px;
+  height: auto;
+  display: block;
+  -webkit-user-drag: none;
+}
+.menu-logo-sub {
+  width: 46%;
+  max-width: 180px;
+  height: auto;
+  margin-top: 6px;
+  display: block;
+  -webkit-user-drag: none;
 }
 
-#menu-subtitle {
-  margin-top: 8px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #f6c453;
-  letter-spacing: 3px;
-  text-shadow: 0 0 18px rgba(246,196,83,0.5);
+/* Game list — full-width artwork buttons stacked vertically. */
+#menu-games {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.game-btn {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 16px;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.game-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  -webkit-user-drag: none;
+}
+.game-btn:not([disabled]):active { transform: scale(0.97); }
+/* Active game gets a soft glow to match the highlighted mockup button. */
+.game-btn--active img {
+  box-shadow: 0 0 18px rgba(54,150,255,0.55);
+}
+.game-btn[disabled] {
+  cursor: default;
+  opacity: 0.9;       /* "Coming Soon" art is already dimmed in the PNG */
 }
 
 .menu-btn {
@@ -560,6 +607,22 @@ html, body {
 .btn-primary   { background: #e94560; color: #fff; }
 .btn-secondary { background: rgba(255,255,255,0.1); color: #fff;
                  border: 1px solid rgba(255,255,255,0.25); }
+
+/* Art buttons — Normal / Rank menu artwork (text baked into the PNG). */
+.menu-btn--art {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  width: 260px;
+  max-width: 70vw;
+}
+.menu-btn--art img {
+  width: 100%;
+  height: auto;
+  display: block;
+  -webkit-user-drag: none;
+}
 
 /* ── Sound toggle (shared: menu + in-game HUD) ── */
 .icon-btn {
@@ -581,6 +644,21 @@ html, body {
 .icon-btn:active { transform: scale(0.92); opacity: 0.85; }
 .icon-btn.muted  { opacity: 0.55; }
 
+/* Image-based icon button (menu sound toggle uses artwork, not an emoji). */
+.icon-btn--img {
+  border: none;
+  background: none;
+  width: 44px;
+  height: 44px;
+}
+.icon-btn--img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  -webkit-user-drag: none;
+}
+.icon-btn--img.muted { opacity: 1; }   /* OFF state is conveyed by the artwork itself */
+
 /* Menu: pin to the screen's top-right corner. */
 #menu-screen #sound-toggle {
   position: absolute;
@@ -592,60 +670,64 @@ html, body {
    RESULT SCREEN
    ════════════════════════════ */
 #result-screen {
-  background: #16213e;
-  justify-content: center;
+  background: #0a1330;
+  justify-content: safe center;   /* centre when it fits; fall back to top (no clip) when it overflows */
   align-items: center;
-  gap: 24px;
-  padding: 32px 24px;
+  gap: 14px;
+  padding: 20px;
+  overflow-y: auto;
 }
 
-#result-title {
-  font-size: 36px;
+/* Result board — single artwork (ribbon + confetti + labels baked in). Values,
+   the New Record badge and the action buttons are positioned over it as
+   percentages of the board, so the whole thing scales as one unit. cqw units
+   (1% of the card's width) size the value text to the board. */
+.result-card {
+  position: relative;
+  width: 100%;
+  max-width: 390px;
+  aspect-ratio: 813 / 909;
+  background: center / 100% 100% no-repeat url('../img/Result/Result_Board.png');
+  container-type: inline-size;
+  flex: 0 0 auto;
+}
+
+.r-val {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-weight: 900;
-  color: #f5a623;
-  letter-spacing: 3px;
-}
-
-.result-board {
-  width: 100%;
-  background: rgba(255,255,255,0.06);
-  border-radius: 18px;
-  padding: 24px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px 12px;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.result-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.result-item .label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.45);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.result-item .value {
-  font-size: 38px;
-  font-weight: 800;
-  color: #fff;
   line-height: 1;
+  white-space: nowrap;
+}
+.r-score { top: 36.5%; font-size: 12.8cqw; color: #ffffff; }
+.r-combo { top: 42%; left: 22.5%; font-size: 8.1cqw; color: #f5a623; }
+.r-level { top: 42%; left: 75.5%; font-size: 8.1cqw; color: #ff4f8b; }
+.r-best  { top: 55.5%; font-size: 10.3cqw; color: #2fe0a6; }
+
+.r-badge {
+  position: absolute;
+  left: 50%;
+  top: 63.1%;
+  transform: translate(-50%, -50%);
+  width: 34%;
+  height: auto;
 }
 
-.result-item .value.best { color: #f5a623; }
-
-.result-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
+.r-btn {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }
+.r-btn img { width: 100%; height: auto; display: block; -webkit-user-drag: none; }
+.r-btn:active { transform: translate(-50%, -50%) scale(0.96); opacity: 0.9; }
+.r-btn--share { left: 50%;   top: 75.6%; width: 82%; }
+.r-btn--retry { left: 29.5%; top: 89.8%; width: 40%; }
+.r-btn--home  { left: 70.5%; top: 89.8%; width: 40%; }
 
 /* ── Rank leaderboard ── */
 #rank-board {
@@ -860,4 +942,135 @@ html, body {
 .share-icon {
   font-size: 26px;
   line-height: 1;
+}
+
+/* ════════════════════════════
+   SETTINGS + LANGUAGE
+   ════════════════════════════ */
+
+/* Top-right icon cluster on the menu (settings gear + sound) */
+#menu-icons {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 10px;
+  z-index: 3;
+}
+/* Once inside the cluster, the sound button no longer pins itself. */
+#menu-icons #sound-toggle { position: static; }
+
+/* Modal that drops in from centre (settings + first-run language picker) */
+.center-modal { align-items: center; }
+.center-modal .modal-card {
+  border-radius: 24px;
+  max-width: 340px;
+  width: calc(100% - 48px);
+  padding: 28px 24px;
+  gap: 20px;
+}
+
+/* First-run How-To-Play popup — full tutorial image, scrollable if tall */
+.center-modal .howto-card {
+  max-width: 400px;
+  width: calc(100% - 32px);
+  max-height: 90vh;
+  padding: 20px 16px 24px;
+  gap: 14px;
+}
+.howto-scroll {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.howto-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+/* Mode picker at the bottom of the How-To popup (Normal / Rank art buttons). */
+.howto-modes {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  justify-content: center;
+}
+.mode-btn {
+  flex: 1 1 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.mode-btn img {
+  width: 100%;
+  height: auto;
+  display: block;
+  -webkit-user-drag: none;
+}
+.mode-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+/* A labelled row inside settings: label on the left, control on the right. */
+.settings-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.settings-label {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+
+/* Segmented language toggle (EN / TH) */
+.lang-options {
+  display: flex;
+  gap: 8px;
+}
+.lang-opt {
+  min-width: 72px;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.lang-opt:active { transform: scale(0.95); }
+.lang-opt.selected {
+  border-color: #e94560;
+  background: rgba(233,69,96,0.22);
+  box-shadow: 0 0 16px rgba(233,69,96,0.35);
+}
+
+/* Compact pill used as the SOUND on/off control inside settings */
+.toggle-pill {
+  min-width: 64px;
+  padding: 10px 18px;
+  border-radius: 50px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.toggle-pill:active { transform: scale(0.95); }
+.toggle-pill.on {
+  border-color: #1fdb5a;
+  background: rgba(31,219,90,0.18);
 }

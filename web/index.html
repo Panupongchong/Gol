@@ -8,41 +8,212 @@
   <script src="js/scaler.js" defer></script>
 </head>
 <body>
+  <!-- ── Splash screen (shown ~2s on load, then fades out) ── -->
+  <div id="splash">
+    <img src="img/LITJITPLAY-Studios_logo_790.png" alt="LITJITPLAY Studios" draggable="false">
+  </div>
+
   <div id="menu-screen" class="screen">
 
-    <div id="menu-title">
-      NUMBER PARTY
-      <span id="menu-subtitle">HighLow Rush</span>
+    <div id="menu-icons">
+      <button id="settings-toggle" class="icon-btn" type="button" aria-label="Settings">⚙</button>
+      <button id="sound-toggle" class="icon-btn icon-btn--img" type="button" aria-label="Toggle sound">
+        <img id="sound-icon" src="img/Main Menu/Sound_ON.png" alt="" draggable="false">
+      </button>
     </div>
 
-    <button class="menu-btn btn-primary"   id="btn-play">NORMAL</button>
-    <button class="menu-btn btn-secondary" id="btn-rank">RANK</button>
+    <div id="menu-logo">
+      <img class="menu-logo-main" src="img/Main Menu/Logo_NumberParty.png" alt="NUMBER PARTY" draggable="false">
+      <img class="menu-logo-sub"  src="img/Main Menu/NumberParty_TH.png"   alt="" draggable="false">
+    </div>
 
-    <button id="sound-toggle" class="icon-btn" type="button" aria-label="Toggle sound">🔊</button>
+    <div id="menu-games">
+      <button class="game-btn game-btn--active" id="btn-highlow" type="button">
+        <img src="img/Main Menu/Btn_HighLowRush.png" alt="HighLow Rush" draggable="false">
+        <span class="sr-only" data-i18n="menu.subtitle">HighLow Rush</span>
+      </button>
+      <button class="game-btn" type="button" disabled aria-disabled="true">
+        <img src="img/Main Menu/Btn_MiniGame2.png" alt="Mini Game 2 — Coming Soon" draggable="false">
+      </button>
+      <button class="game-btn" type="button" disabled aria-disabled="true">
+        <img src="img/Main Menu/Btn_MiniGame3.png" alt="Mini Game 3 — Coming Soon" draggable="false">
+      </button>
+      <button class="game-btn" type="button" disabled aria-disabled="true">
+        <img src="img/Main Menu/Btn_MiniGame4.png" alt="Mini Game 4 — Coming Soon" draggable="false">
+      </button>
+    </div>
 
+  </div>
+
+  <!-- ── Settings modal ── -->
+  <div id="settings-modal" class="modal-overlay center-modal" style="display:none">
+    <div class="modal-card">
+      <div class="modal-title" data-i18n="settings.title">SETTINGS</div>
+
+      <div class="settings-row">
+        <span class="settings-label" data-i18n="settings.language">LANGUAGE</span>
+        <div class="lang-options" id="settings-lang">
+          <button class="lang-opt" type="button" data-lang="en">EN</button>
+          <button class="lang-opt" type="button" data-lang="th">ไทย</button>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <span class="settings-label" data-i18n="settings.sound">SOUND</span>
+        <button class="toggle-pill" id="settings-sound" type="button"></button>
+      </div>
+
+      <button class="menu-btn btn-primary" id="settings-close" data-i18n="settings.close">CLOSE</button>
+    </div>
+  </div>
+
+  <!-- ── First-run language picker ── -->
+  <div id="lang-modal" class="modal-overlay center-modal" style="display:none">
+    <div class="modal-card">
+      <div class="modal-title" data-i18n="lang.select">SELECT LANGUAGE</div>
+      <div class="lang-options" id="lang-picker">
+        <button class="lang-opt" type="button" data-lang="en">English</button>
+        <button class="lang-opt" type="button" data-lang="th">ไทย</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── First-run How-To-Play popup (shown once, after first language pick) ── -->
+  <div id="howto-modal" class="modal-overlay center-modal" style="display:none">
+    <div class="modal-card howto-card">
+      <div class="modal-title" data-i18n="howto.title">HOW TO PLAY</div>
+      <div class="howto-scroll">
+        <img id="howto-img" class="howto-img" src="" alt="" draggable="false">
+      </div>
+      <div class="howto-modes">
+        <button class="mode-btn" id="howto-normal" type="button">
+          <img src="img/Btn_NORMAL.png" alt="" draggable="false">
+          <span class="sr-only" data-i18n="menu.normal">NORMAL</span>
+        </button>
+        <button class="mode-btn" id="howto-rank" type="button">
+          <img src="img/Btn_RANK.png" alt="" draggable="false">
+          <span class="sr-only" data-i18n="menu.rank">RANK</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <script type="module">
     import { isMuted, toggleMute } from './js/sfx.js';
+    import { getLang, setLang, hasLangChoice, applyTranslations, t } from './js/i18n.js';
+    import { openPopup, closePopup } from './js/popup.js';
 
-    document.getElementById('btn-play').addEventListener('click', () => {
-      sessionStorage.setItem('mode', 'normal');
-      window.location.href = 'game.html';
-    });
-    document.getElementById('btn-rank').addEventListener('click', () => {
-      sessionStorage.setItem('mode', 'rank');
-      window.location.href = 'game.html';
-    });
+    applyTranslations();
 
-    // Sound on/off — persisted in localStorage by sfx.js, shared with the game.
-    const soundBtn = document.getElementById('sound-toggle');
+    // ── Splash: show for ~2s on the first load of the session, then fade out and
+    //    start the first-run flow. Coming back to the menu later (e.g. Home from
+    //    the result screen) skips the splash and lands directly on the menu.
+    //    New player:       splash → language picker → menu
+    //    Returning player: splash → menu
+    //    (The How-To popup now opens from the menu's HighLow Rush button.)
+    const splash = document.getElementById('splash');
+    const splashSeen = sessionStorage.getItem('splashSeen') === '1';
+    if (splash && !splashSeen) {
+      sessionStorage.setItem('splashSeen', '1');
+      setTimeout(() => {
+        splash.classList.add('hide');
+        splash.addEventListener('transitionend', () => {
+          splash.remove();
+          startFirstRunFlow();
+        }, { once: true });
+      }, 2000);
+    } else {
+      if (splash) splash.remove();
+      startFirstRunFlow();
+    }
+
+    // Launch a run in the chosen mode (set by the How-To popup's mode buttons).
+    const startGame = (mode) => {
+      sessionStorage.setItem('mode', mode);
+      window.location.href = 'game.html';
+    };
+
+    // HighLow Rush → How-To popup (rules + Normal/Rank mode buttons) → gameplay.
+    document.getElementById('btn-highlow').addEventListener('click', openHowTo);
+
+    // ── Sound state (persisted in localStorage by sfx.js, shared with the game) ──
+    const soundBtn  = document.getElementById('sound-toggle');
+    const soundIcon = document.getElementById('sound-icon');
     const renderSound = () => {
       const muted = isMuted();
-      soundBtn.textContent = muted ? '🔇' : '🔊';
+      soundIcon.src = muted ? 'img/Main Menu/Sound_OFF.png' : 'img/Main Menu/Sound_ON.png';
       soundBtn.classList.toggle('muted', muted);
     };
     renderSound();
-    soundBtn.addEventListener('click', () => { toggleMute(); renderSound(); });
+    soundBtn.addEventListener('click', () => { toggleMute(); renderSound(); renderSettingsSound(); });
+
+    // ── Settings modal ──
+    const settingsModal = document.getElementById('settings-modal');
+    const settingsSoundBtn = document.getElementById('settings-sound');
+
+    const renderSettingsSound = () => {
+      const on = !isMuted();
+      settingsSoundBtn.textContent = on ? t('settings.on') : t('settings.off');
+      settingsSoundBtn.classList.toggle('on', on);
+    };
+
+    const renderLangSelection = (container) => {
+      container.querySelectorAll('.lang-opt').forEach(b => {
+        b.classList.toggle('selected', b.dataset.lang === getLang());
+      });
+    };
+
+    const openSettings = () => {
+      renderSettingsSound();
+      renderLangSelection(document.getElementById('settings-lang'));
+      openPopup(settingsModal);
+    };
+
+    document.getElementById('settings-toggle').addEventListener('click', openSettings);
+    document.getElementById('settings-close').addEventListener('click', closePopup);
+    settingsModal.addEventListener('click', e => { if (e.target === settingsModal) closePopup(); });
+
+    settingsSoundBtn.addEventListener('click', () => { toggleMute(); renderSound(); renderSettingsSound(); });
+
+    // Changing language re-applies all on-page translations live.
+    document.getElementById('settings-lang').addEventListener('click', e => {
+      const opt = e.target.closest('.lang-opt');
+      if (!opt) return;
+      setLang(opt.dataset.lang);
+      applyTranslations();
+      renderLangSelection(document.getElementById('settings-lang'));
+      renderSettingsSound();
+    });
+
+    // ── How-To-Play popup — doubles as the pre-game mode picker. ──
+    // Opens from the HighLow Rush button; the Normal / Rank buttons launch a run.
+    const howtoModal = document.getElementById('howto-modal');
+    function openHowTo() {
+      const img = document.getElementById('howto-img');
+      img.src = `img/HowToPlay_${getLang() === 'th' ? 'TH' : 'EN'}_Full.png`;
+      openPopup(howtoModal);
+    }
+
+    document.getElementById('howto-normal').addEventListener('click', () => startGame('normal'));
+    document.getElementById('howto-rank').addEventListener('click',   () => startGame('rank'));
+    // Tap the backdrop (or Esc / Back) to back out without starting a run.
+    howtoModal.addEventListener('click', e => { if (e.target === howtoModal) closePopup(); });
+
+    // ── First-run flow — runs after the splash fades out. ──
+    // New player: language picker, then they land on the menu. Returning player:
+    // straight to the menu (language already chosen).
+    function startFirstRunFlow() {
+      if (hasLangChoice()) return;
+      const langModal = document.getElementById('lang-modal');
+      langModal.style.display = '';
+      langModal.addEventListener('click', e => {
+        const opt = e.target.closest('.lang-opt');
+        if (!opt) return;
+        setLang(opt.dataset.lang);
+        applyTranslations();
+        langModal.style.display = 'none';
+      });
+    }
   </script>
 </body>
 </html>

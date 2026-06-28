@@ -139,7 +139,6 @@ export function playBoardAnim(canvas, animName, { then = null, thenLoop = false 
 export function createBlock(number, skinName) {
   const dpr   = Math.min(window.devicePixelRatio || 1, 2);
   const phys  = CANVAS_CSS * dpr;
-  const scale = (BLOCK_CSS / SPINE_UNITS) * dpr;
 
   const canvas  = document.createElement('canvas');
   canvas.width  = phys;
@@ -164,15 +163,32 @@ export function createBlock(number, skinName) {
   const skeleton  = new spine.Skeleton(skData);
   skeleton.setSkinByName(skinName);
   skeleton.setToSetupPose();
-  skeleton.scaleX = scale;
-  skeleton.scaleY = scale;
 
   const stateData = new spine.AnimationStateData(skData);
   const animState = new spine.AnimationState(stateData);
   animState.setAnimation(0, 'idle', true);   // loop so it never expires
 
+  // Skins differ in native art size (Word hexagons and FiveBar pentagons are
+  // much wider than a Number tile). Measure the resting-pose bounds and scale so
+  // every skin's longest side maps to BLOCK_CSS — uniform tiles that always fit
+  // their footprint, so two blocks on one side never overlap. Then centre the
+  // art's bounding box in the canvas. Bounds are taken after applying the idle
+  // frame (setup pose may have no attachments) and guarded against empty art.
+  skeleton.scaleX = skeleton.scaleY = 1;
+  animState.update(0);
+  animState.apply(skeleton);
+  skeleton.updateWorldTransform(spine.Physics.update);
+  const off = new spine.Vector2(), size = new spine.Vector2();
+  skeleton.getBounds(off, size, []);
+  const valid  = isFinite(size.x) && isFinite(size.y) && size.x > 0 && size.y > 0;
+  const maxDim = valid ? Math.max(size.x, size.y) : SPINE_UNITS;
+  const scale  = (BLOCK_CSS / maxDim) * dpr;
+  skeleton.scaleX = skeleton.scaleY = scale;
+  const ox = valid ? (off.x + size.x / 2) * scale : 0;
+  const oy = valid ? (off.y + size.y / 2) * scale : 0;
+
   const id = _nextId++;
-  _instances.set(id, { canvas, ctx, skeleton, animState, phys, physH: phys, ox: 0, oy: 0, _firstFrame: true });
+  _instances.set(id, { canvas, ctx, skeleton, animState, phys, physH: phys, ox, oy, _firstFrame: true });
   canvas._spineId = id;
   return canvas;
 }

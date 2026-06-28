@@ -11,6 +11,7 @@ const SFX_FILES = {
   quizDone:   'sfx/DM-CGS-14.wav',  // whole panel cleared
   incorrect:  'sfx/DM-CGS-09.wav',  // wrong answer / game over
   itemFreeze: 'sfx/DM-CGS-31.wav',  // Freeze Time item activated
+  itemDouble: 'sfx/DM-CGS-25.wav',  // Double Score item activated
   itemShield: 'sfx/DM-CGS-27.wav',  // Shield absorbed a hit
   countTick:  'sfx/DM-CGS-33.wav',  // countdown 3 / 2 / 1 beep
   countGo:    'sfx/DM-CGS-40.wav',  // countdown START

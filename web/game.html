@@ -10,39 +10,34 @@
   <link rel="modulepreload" href="js/quizFactory.js">
   <link rel="modulepreload" href="js/swipeInput.js">
   <link rel="modulepreload" href="js/gameController.js">
-  <link rel="preload" as="fetch" href="data/lv.json" crossorigin>
+  <!-- Quiz curriculum is language-specific (data/lv.<lang>.json); fetched in init() -->
+  <link rel="modulepreload" href="js/i18n.js">
   <script src="js/spine-canvas.js" defer></script>
 </head>
 <body>
 
   <!-- Loading overlay — hidden once Spine assets are ready -->
-  <div id="loading">LOADING</div>
+  <div id="loading" data-i18n="game.loading">LOADING</div>
 
   <div id="game-screen" class="screen">
 
     <!-- HUD -->
     <div id="hud">
       <div id="hud-stats">
-        <div id="score-display" class="hud-card">
-          <span class="card-icon">🏆</span>
-          <div class="card-text">
-            <span class="stat-label">SCORE</span>
-            <span class="stat-value" id="score">0</span>
-          </div>
+        <div id="score-display">
+          <span class="stat-label sr-only" data-i18n="hud.score">SCORE</span>
+          <span class="stat-value" id="score">0</span>
         </div>
         <div id="combo-display">
-          <span class="stat-label">COMBO</span>
+          <span class="stat-label" data-i18n="hud.combo">COMBO</span>
           <span class="stat-value" id="combo">0</span>
         </div>
-        <div id="level-display" class="hud-card">
-          <div class="card-text">
-            <span class="stat-label">LEVEL</span>
-            <span class="stat-value" id="level-val">1</span>
-          </div>
-          <span class="card-icon">★</span>
+        <div id="level-display">
+          <span class="stat-label sr-only" data-i18n="hud.level">LEVEL</span>
+          <span class="stat-value" id="level-val">1</span>
         </div>
       </div>
-      <div id="time-bar-track"><div id="time-fill"></div></div>
+      <div id="time-bar"><div id="time-fill"></div></div>
     </div>
 
     <!-- Panels -->
@@ -51,11 +46,7 @@
     <!-- High / Low direction banner -->
     <div id="op-banner">
       <span class="speed-lines left"><i></i><i></i><i></i></span>
-      <span id="op-indicator">
-        <span id="hl-high">HIGH</span>
-        <span id="op-arrow">▼</span>
-        <span id="hl-low">LOW</span>
-      </span>
+      <img id="op-img" src="img/High.png" alt="">
       <span class="speed-lines right"><i></i><i></i><i></i></span>
       <span id="op-label" class="sr-only">—</span>
     </div>
@@ -65,7 +56,7 @@
 
     <!-- Game over overlay -->
     <div id="gameover" class="hidden">
-      <span id="gameover-text">GAME OVER</span>
+      <span id="gameover-text" data-i18n="game.over">GAME OVER</span>
     </div>
 
     <!-- Countdown overlay -->
@@ -75,21 +66,19 @@
 
     <!-- Items bar (gameplay only) -->
     <div id="items-bar">
-      <span class="items-header">ITEMS</span>
-      <div class="items-row">
+      <span class="items-header" data-i18n="items.header">ITEMS</span>
+      <div class="items-slot">
         <button class="item" id="item-freeze" data-item="freeze" type="button">
-          <span class="item-icon">❄</span>
-          <span class="item-name">FREEZE</span>
-          <span class="item-badge" id="item-freeze-badge">×1</span>
+          <img class="item-icon" src="img/item_freeze.png" alt="" draggable="false">
+          <span class="item-name" data-i18n="items.freeze">FREEZE</span>
         </button>
-        <div class="item" id="item-double" data-item="double">
-          <span class="item-icon">×2</span>
-          <span class="item-name">DOUBLE</span>
-        </div>
-        <div class="item item-empty" aria-hidden="true"></div>
+        <button class="item" id="item-double" data-item="double" type="button">
+          <img class="item-icon" src="img/item_double.png" alt="" draggable="false">
+          <span class="item-name" data-i18n="items.double">DOUBLE</span>
+        </button>
         <div class="item" id="item-shield" data-item="shield">
-          <span class="item-icon">+1</span>
-          <span class="item-name">SHIELD</span>
+          <img class="item-icon" src="img/item_shield.png" alt="" draggable="false">
+          <span class="item-name" data-i18n="items.shield">SHIELD</span>
         </div>
       </div>
     </div>
@@ -102,6 +91,9 @@
     import { load as spineLoad, createBlock, createBoard, destroyAll, playAnim, playActive, playIncorrect, playBoardAnim } from './js/spineRenderer.js';
     import { loadSfx, play as playSfx, unlockAudio } from './js/sfx.js';
     import { startSession } from './js/leaderboard.js';
+    import { applyTranslations, t, getLang } from './js/i18n.js';
+
+    applyTranslations();
 
     const SKIN_MAP = { 1:'Number', 2:'Negative', 3:'Word', 4:'Dice', 5:'FiveBar', 6:'Roman', 7:'Clock', 8:'NumberTH', 9:'WordTH' };
 
@@ -139,7 +131,7 @@
             setTimeout(nextStep, dur);
           } else {
             // Show START and begin the game simultaneously
-            textEl.textContent = 'START';
+            textEl.textContent = t('game.start');
             textEl.className = '';
             void textEl.offsetWidth;
             textEl.className = 'start';
@@ -163,17 +155,14 @@
     const comboEl     = document.getElementById('combo');
     const swipeArea   = document.getElementById('swipe-area');
     const loadingEl   = document.getElementById('loading');
-    const opArrowEl  = document.getElementById('op-arrow');
+    const opImgEl    = document.getElementById('op-img');
     const opLabelEl  = document.getElementById('op-label');
-    const hlHighEl   = document.getElementById('hl-high');
-    const hlLowEl    = document.getElementById('hl-low');
     const levelValEl = document.getElementById('level-val');
     const itemEls    = {
       freeze: document.getElementById('item-freeze'),
       double: document.getElementById('item-double'),
       shield: document.getElementById('item-shield'),
     };
-    const freezeBadgeEl = document.getElementById('item-freeze-badge');
 
     // ── State ──
     let panels = []; // parallel to controller._quizList
@@ -245,12 +234,10 @@
       const firstRow = panels[0].querySelector('.quiz-row');
       if (!firstRow) return;
       const answer = parseInt(firstRow.dataset.answer, 10);
-      if (answer === 0)      { opArrowEl.textContent = '◀'; opLabelEl.textContent = 'LEFT';  }
-      else if (answer === 1) { opArrowEl.textContent = '▶'; opLabelEl.textContent = 'RIGHT'; }
-      else                   { opArrowEl.textContent = '▲'; opLabelEl.textContent = 'EQUAL'; }
-      // Light the HIGH/LOW banner side that matches the required swipe.
-      hlHighEl.classList.toggle('lit', answer === 0 || answer === 2);
-      hlLowEl.classList.toggle('lit',  answer === 1 || answer === 2);
+      // Swap the banner art: LOW required (answer 1) → Low.png; HIGH or EQUAL → High.png
+      // (no dedicated EQUAL asset, so the HIGH-lit art doubles for it).
+      opImgEl.src = answer === 1 ? 'img/Low.png' : 'img/High.png';
+      opLabelEl.textContent = answer === 0 ? 'LEFT' : answer === 1 ? 'RIGHT' : 'EQUAL';
     }
 
     // ── Animation helpers ──
@@ -375,7 +362,9 @@
       const el = itemEls[id];
       if (!el) return;
 
-      if (id === 'freeze') {
+      // Freeze / Double are triggered items — glow while in effect, then grey
+      // out once their single charge is spent.
+      if (id === 'freeze' || id === 'double') {
         if (state.active) {
           el.classList.add('active');
         } else {
@@ -386,17 +375,16 @@
             el.disabled = true;
           }
         }
-        if (freezeBadgeEl) freezeBadgeEl.textContent = `×${state.charges}`;
         return;
       }
 
-      // Double / Shield are passive — active by default, greyed when consumed.
+      // Shield is passive — active by default, greyed when consumed.
       if (state.active) {
         el.classList.add('active');
       } else {
         el.classList.remove('active');
         el.classList.add('used');
-        if (id === 'shield') playSfx('itemShield');
+        playSfx('itemShield');
       }
     }
 
@@ -404,9 +392,9 @@
       itemEls.freeze.classList.remove('used');
       itemEls.freeze.classList.remove('active');
       itemEls.freeze.disabled = false;
-      if (freezeBadgeEl) freezeBadgeEl.textContent = '×1';
       itemEls.double.classList.remove('used');
-      itemEls.double.classList.add('active');
+      itemEls.double.classList.remove('active');
+      itemEls.double.disabled = false;
       itemEls.shield.classList.remove('used');
       itemEls.shield.classList.add('active');
     }
@@ -423,8 +411,11 @@
     // ── Bootstrap ──
 
     async function init() {
+      // Per-language quiz curriculum: EN uses Latin numerals/words, TH uses Thai
+      // glyphs. Fall back to the English table if the chosen file is missing.
+      const lvUrl = `data/lv.${getLang()}.json`;
       const [lvData] = await Promise.all([
-        fetch('data/lv.json').then(r => r.json()),
+        fetch(lvUrl).then(r => r.ok ? r.json() : fetch('data/lv.en.json').then(r => r.json())),
         spineLoad('spine'),
         loadSfx(),
       ]);
@@ -452,19 +443,28 @@
       controller.onItemUpdate  = (id, state) => updateItemUI(id, state);
 
       // Wire input
-      const swipe = new SwipeInput(swipeArea);
+      const swipe = new SwipeInput(swipeArea, quizArea);
       swipeArea.addEventListener('lefttap',  () => { unlockAudio(); playSfx('tap'); controller.answerLeft(); });
       swipeArea.addEventListener('righttap', () => { unlockAudio(); playSfx('tap'); controller.answerRight(); });
       swipeArea.addEventListener('midtap',   () => { unlockAudio(); playSfx('tap'); controller.answerMid(); });
       swipeArea.addEventListener('swipe',    () => { unlockAudio(); playSfx('tap'); controller.answerSwipe(); });
 
+      // Activate items — shared by tap (pointerdown) and keyboard (1 / 2).
+      const useFreeze = () => { unlockAudio(); playSfx('itemFreeze'); controller.useFreeze(); };
+      const useDouble = () => { unlockAudio(); playSfx('itemDouble'); controller.useDouble(); };
+
       // Freeze item — stop the tap from reaching the swipe capture layer.
       itemEls.freeze.addEventListener('pointerdown', e => {
         e.stopPropagation();
         e.preventDefault();
-        unlockAudio();
-        playSfx('itemFreeze');
-        controller.useFreeze();
+        useFreeze();
+      });
+
+      // Double Score item — same tap-to-activate handling as Freeze.
+      itemEls.double.addEventListener('pointerdown', e => {
+        e.stopPropagation();
+        e.preventDefault();
+        useDouble();
       });
 
       document.addEventListener('keydown', e => {
@@ -474,6 +474,9 @@
         if (e.key === 'ArrowUp'    || e.key === 'ArrowDown' ||
             e.key === 'w'          || e.key === 'W' ||
             e.key === 's'          || e.key === 'S')                  { unlockAudio(); playSfx('tap'); controller.answerMid();   }
+        // Active items — 1 = Freeze, 2 = Double (number row and numpad).
+        if (e.code === 'Digit1' || e.code === 'Numpad1') useFreeze();
+        if (e.code === 'Digit2' || e.code === 'Numpad2') useDouble();
       });
 
       resetItemsUI();
